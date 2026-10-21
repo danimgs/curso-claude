@@ -20,3 +20,12 @@ describe('app: rate limiting en /auth', () => {
         expect(statuses[10]).toBe(429)
     })
 })
+
+describe('app: cabeceras de seguridad', () => {
+    it('envía cabeceras de seguridad de helmet y oculta x-powered-by', async () => {
+        const res = await request(app).get('/health')
+        expect(res.headers['x-content-type-options']).toBe('nosniff')
+        expect(res.headers['strict-transport-security']).toBeDefined()
+        expect(res.headers['x-powered-by']).toBeUndefined()
+    })
+})

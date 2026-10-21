@@ -1,5 +1,6 @@
 import express from 'express'
 import cors from 'cors'
+import helmet from 'helmet'
 import rateLimit from 'express-rate-limit'
 import authRoutes from '@employee/infrastructure/http/auth.routes.js'
 import employeeRoutes from '@employee/infrastructure/http/employee.routes.js'
@@ -22,8 +23,10 @@ const authLimiter = (max: number, windowMs: number) => rateLimit({
     message: { error: 'TooManyRequests', message: 'Demasiados intentos, inténtalo más tarde' }
 })
 
+app.disable('x-powered-by')
+app.use(helmet())
 app.use(cors())
-app.use(express.json())
+app.use(express.json({ limit: '100kb' }))
 
 app.use('/api/v1/auth/login', authLimiter(10, 15 * 60 * 1000))
 app.use('/api/v1/auth/register', authLimiter(20, 60 * 60 * 1000))
