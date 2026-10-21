@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { RestaurantService } from './restaurant.service.js'
 import { MockRestaurantRepository } from '@repositories/mocks/MockRestaurantRepository.js'
+import { InvalidLogoUrlError } from '@errors/DomainErrors.js'
 
 describe('RestaurantService', () => {
     let repo: MockRestaurantRepository
@@ -121,5 +122,44 @@ describe('RestaurantService', () => {
             const results = await service.getAll()
             expect(results).toHaveLength(2)
         })
+    })
+})
+
+describe('RestaurantService: logoUrl', () => {
+    const base = {
+        name: 'La Trattoria', address: 'Calle Mayor 10', email: 'info@trattoria.com',
+        phone: '+34 612345678', ownerFirstName: 'Carlos', ownerLastName: 'García'
+    }
+    const make = () => new RestaurantService(new MockRestaurantRepository())
+
+    it('acepta una URL https', async () => {
+        const result = await make().create({ ...base, logoUrl: 'https://cdn.example.com/logo.png' })
+        expect(result.logoUrl).toBe('https://cdn.example.com/logo.png')
+    })
+
+    it.each([null, undefined, '', '   '])('trata %j como sin logo', async (logoUrl) => {
+        const result = await make().create({ ...base, logoUrl } as any)
+        expect(result.logoUrl).toBeNull()
+    })
+
+    it.each([
+        'javascript:alert(1)',
+        'JavaScript:alert(1)',
+        'data:text/html,<script>alert(1)</script>',
+        'http://cdn.example.com/logo.png',
+        '//cdn.example.com/logo.png',
+        'no es una url',
+        'ftp://cdn.example.com/logo.png',
+        5,
+        'https://' + 'a'.repeat(2050) + '.com'
+    ])('rechaza %j', async (logoUrl) => {
+        await expect(make().create({ ...base, logoUrl } as any)).rejects.toThrow(InvalidLogoUrlError)
+    })
+
+    it('aplica la misma regla al actualizar', async () => {
+        const service = make()
+        const created = await service.create({ ...base, logoUrl: null })
+        await expect(service.update(created.id, { ...base, logoUrl: 'javascript:alert(1)' }))
+            .rejects.toThrow(InvalidLogoUrlError)
     })
 })

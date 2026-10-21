@@ -198,3 +198,9 @@ export class InvalidDishIngredientError extends AppError {
     super(message ?? 'Invalid dish ingredient')
   }
 }
+
+export class InvalidLogoUrlError extends AppError {
+  constructor() {
+    super('Logo URL must be a valid https URL')
+  }
+}
