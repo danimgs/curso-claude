@@ -123,7 +123,7 @@ Las validaciones de la Fase 2 y 4 se implementan con funciones propias en los se
 
 ### Fase 2: autenticación y validación
 
-- [ ] **T12** (~5 min) — Instalar `express-rate-limit` y aplicarlo a `/api/v1/auth` (login y registro con límites distintos) · `packages/api/package.json`, `src/app.ts`
+- [x] **T12** (~5 min) — Instalar `express-rate-limit` y aplicarlo a `/api/v1/auth` (login y registro con límites distintos) · `packages/api/package.json`, `src/app.ts`
 - [ ] **T13** (~10 min) — Crear `WeakPasswordError` (400) en `DomainErrors.ts` y su traducción en `errorHandler` · `src/errors/DomainErrors.ts`, `errorHandler.ts`
 - [ ] **T14** (~10 min) — Validar la contraseña (mín. 10 caracteres, distinta del email) y normalizar el email en `Email` con `trim().toLowerCase()`, con tests · `contexts/shared/domain/Email.ts`, `contexts/employee/application/RegisterClientUseCase.ts`, `CreateEmployeeUseCase.ts`
 - [ ] **T15** (~10 min) — Validar `items` (array de 1 a 50), `quantity` (entero de 1 a 20) y `notes` (máx. 200 caracteres) en la creación de pedidos, con tests · `services/order.service.ts`

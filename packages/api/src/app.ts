@@ -1,5 +1,6 @@
 import express from 'express'
 import cors from 'cors'
+import rateLimit from 'express-rate-limit'
 import authRoutes from '@employee/infrastructure/http/auth.routes.js'
 import employeeRoutes from '@employee/infrastructure/http/employee.routes.js'
 import restaurantEmployeeRoutes from '@employee/infrastructure/http/restaurant-employee.routes.js'
@@ -13,8 +14,19 @@ import { errorHandler } from '@shared/infrastructure/http/errorHandler.js'
 
 const app = express()
 
+const authLimiter = (max: number, windowMs: number) => rateLimit({
+    windowMs,
+    limit: max,
+    standardHeaders: 'draft-7',
+    legacyHeaders: false,
+    message: { error: 'TooManyRequests', message: 'Demasiados intentos, inténtalo más tarde' }
+})
+
 app.use(cors())
 app.use(express.json())
+
+app.use('/api/v1/auth/login', authLimiter(10, 15 * 60 * 1000))
+app.use('/api/v1/auth/register', authLimiter(20, 60 * 60 * 1000))
 
 app.use('/api/v1/orders', orderRoutes)
 app.use('/api/v1/auth', authRoutes)
