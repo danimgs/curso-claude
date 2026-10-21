@@ -1,4 +1,4 @@
-import { InvalidCategoryError } from '@errors/DomainErrors.js'
+import { InvalidCategoryError, InvalidDishIngredientError } from '@errors/DomainErrors.js'
 
 const VALID_DISH_CATEGORIES = ['entrante', 'principal', 'postre', 'bebida'] as const
 
@@ -31,11 +31,11 @@ export function normalizeDishCategory(value: string): DishCategoryType {
 }
 
 export function validateDishIngredient(props: DishIngredient): DishIngredient {
-    if (!props.ingredientId || props.ingredientId.trim() === '') {
-        throw new Error('Ingredient ID is required')
+    if (typeof props?.ingredientId !== 'string' || props.ingredientId.trim() === '') {
+        throw new InvalidDishIngredientError('Ingredient ID is required')
     }
-    if (props.quantity <= 0) {
-        throw new Error('Ingredient quantity must be positive')
+    if (typeof props.quantity !== 'number' || !Number.isFinite(props.quantity) || props.quantity <= 0) {
+        throw new InvalidDishIngredientError('Ingredient quantity must be a positive number')
     }
     return { ingredientId: props.ingredientId, quantity: props.quantity }
 }

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { IngredientService } from './ingredient.service.js'
 import { normalizeIngredientUnit } from '@models/ingredient.model.js'
-import { IngredientNotFoundError } from '@errors/DomainErrors.js'
+import { IngredientNotFoundError, InvalidStockError, NameTooLongError, IngredientNameRequiredError } from '@errors/DomainErrors.js'
 import { MockIngredientRepository } from '@repositories/mocks/MockIngredientRepository.js'
 
 describe('normalizeIngredientUnit', () => {
@@ -137,5 +137,31 @@ describe('IngredientService', () => {
             expect(found).not.toBeNull()
             expect(found?.name).toBe(created.name)
         })
+    })
+})
+
+describe('IngredientService: validación de tipos', () => {
+    const input = (overrides: Record<string, unknown> = {}) =>
+        ({ name: 'Sal', unit: 'kg', currentStock: 1, restaurantId: 'r1', ...overrides }) as any
+    const make = () => new IngredientService(new MockIngredientRepository())
+
+    it.each([NaN, Infinity, -Infinity, '5', null, undefined])('rechaza currentStock %s', async (currentStock) => {
+        await expect(make().create(input({ currentStock }))).rejects.toThrow(InvalidStockError)
+    })
+
+    it('rechaza un nombre que no es texto', async () => {
+        await expect(make().create(input({ name: 5 }))).rejects.toThrow(IngredientNameRequiredError)
+    })
+
+    it('rechaza un nombre de más de 100 caracteres y acepta 100', async () => {
+        await expect(make().create(input({ name: 'a'.repeat(101) }))).rejects.toThrow(NameTooLongError)
+        await expect(make().create(input({ name: 'a'.repeat(100) }))).resolves.toBeDefined()
+    })
+
+    it('aplica las mismas reglas al actualizar', async () => {
+        const service = make()
+        const created = await service.create(input())
+        await expect(service.update(created.id, { name: 'Sal', unit: 'kg', currentStock: NaN }))
+            .rejects.toThrow(InvalidStockError)
     })
 })

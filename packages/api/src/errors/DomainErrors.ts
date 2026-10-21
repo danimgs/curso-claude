@@ -180,3 +180,21 @@ export class DishNotAvailableError extends AppError {
     super('Dish is not available')
   }
 }
+
+export class NameTooLongError extends AppError {
+  constructor(maxLength: number = 100) {
+    super(`Name is too long (max ${maxLength} characters)`)
+  }
+}
+
+export class InvalidStockError extends AppError {
+  constructor() {
+    super('Stock must be a finite number')
+  }
+}
+
+export class InvalidDishIngredientError extends AppError {
+  constructor(message?: string) {
+    super(message ?? 'Invalid dish ingredient')
+  }
+}

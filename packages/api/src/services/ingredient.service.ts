@@ -2,7 +2,7 @@ import { randomUUID } from 'crypto'
 import type { Ingredient } from '@models/ingredient.model.js'
 import { normalizeIngredientUnit } from '@models/ingredient.model.js'
 import type { IngredientRepository } from '@repositories/ingredient.repository.js'
-import { IngredientNameRequiredError, NegativeStockError, RestaurantIdRequiredError, IngredientNotFoundError } from '@errors/DomainErrors.js'
+import { IngredientNameRequiredError, NegativeStockError, RestaurantIdRequiredError, IngredientNotFoundError, NameTooLongError, InvalidStockError } from '@errors/DomainErrors.js'
 
 export interface CreateIngredientDTO {
     name: string
@@ -16,6 +16,8 @@ export interface UpdateIngredientDTO {
     unit: string
     currentStock: number
 }
+
+const MAX_NAME_LENGTH = 100
 
 export class IngredientService {
     constructor(private readonly ingredientRepository: IngredientRepository) {}
@@ -85,8 +87,14 @@ export class IngredientService {
         createdAt: string
         updatedAt: string
     }): Ingredient {
-        if (!props.name || props.name.trim() === '') {
+        if (typeof props.name !== 'string' || props.name.trim() === '') {
             throw new IngredientNameRequiredError()
+        }
+        if (props.name.length > MAX_NAME_LENGTH) {
+            throw new NameTooLongError(MAX_NAME_LENGTH)
+        }
+        if (typeof props.currentStock !== 'number' || !Number.isFinite(props.currentStock)) {
+            throw new InvalidStockError()
         }
         if (props.currentStock < 0) {
             throw new NegativeStockError()

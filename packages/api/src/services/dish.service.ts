@@ -2,7 +2,8 @@ import { randomUUID } from 'crypto'
 import type { Dish, DishIngredient } from '@models/dish.model.js'
 import { normalizeDishCategory, validateDishIngredient } from '@models/dish.model.js'
 import type { DishRepository } from '@repositories/dish.repository.js'
-import { DishNameRequiredError, InvalidPriceError, RestaurantIdRequiredError, DishNotFoundError } from '@errors/DomainErrors.js'
+import type { IngredientRepository } from '@repositories/ingredient.repository.js'
+import { DishNameRequiredError, InvalidPriceError, RestaurantIdRequiredError, DishNotFoundError, NameTooLongError, InvalidDishIngredientError, IngredientNotFoundError } from '@errors/DomainErrors.js'
 
 interface CreateDishInput {
     name: string
@@ -23,8 +24,13 @@ interface UpdateDishInput {
     ingredients: DishIngredient[]
 }
 
+const MAX_NAME_LENGTH = 100
+
 export class DishService {
-    constructor(private readonly dishRepository: DishRepository) {}
+    constructor(
+        private readonly dishRepository: DishRepository,
+        private readonly ingredientRepository: IngredientRepository
+    ) {}
 
     async create(input: CreateDishInput): Promise<Dish> {
         const now = new Date().toISOString()
@@ -41,6 +47,7 @@ export class DishService {
             updatedAt: now
         })
 
+        await this.assertIngredientsBelongToRestaurant(dish.ingredients, dish.restaurantId)
         await this.dishRepository.save(dish)
         return dish
     }
@@ -65,6 +72,7 @@ export class DishService {
             updatedAt: now
         })
 
+        await this.assertIngredientsBelongToRestaurant(updated.ingredients, updated.restaurantId)
         await this.dishRepository.save(updated)
         return updated
     }
@@ -89,6 +97,16 @@ export class DishService {
         return this.dishRepository.findByRestaurantId(restaurantId)
     }
 
+    // Un ingrediente de otro restaurante se trata como inexistente para no confirmar que existe
+    private async assertIngredientsBelongToRestaurant(ingredients: DishIngredient[], restaurantId: string): Promise<void> {
+        for (const { ingredientId } of ingredients) {
+            const ingredient = await this.ingredientRepository.findById(ingredientId)
+            if (!ingredient || ingredient.restaurantId !== restaurantId) {
+                throw new IngredientNotFoundError()
+            }
+        }
+    }
+
     private buildDish(props: {
         id: string
         name: string
@@ -101,11 +119,17 @@ export class DishService {
         createdAt: string
         updatedAt: string
     }): Dish {
-        if (!props.name || props.name.trim() === '') {
+        if (typeof props.name !== 'string' || props.name.trim() === '') {
             throw new DishNameRequiredError()
         }
-        if (props.price <= 0) {
+        if (props.name.length > MAX_NAME_LENGTH) {
+            throw new NameTooLongError(MAX_NAME_LENGTH)
+        }
+        if (typeof props.price !== 'number' || !Number.isFinite(props.price) || props.price <= 0) {
             throw new InvalidPriceError()
+        }
+        if (!Array.isArray(props.ingredients)) {
+            throw new InvalidDishIngredientError('ingredients must be a list')
         }
         if (!props.restaurantId || props.restaurantId.trim() === '') {
             throw new RestaurantIdRequiredError()
