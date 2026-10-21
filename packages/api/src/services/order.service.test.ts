@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { OrderService } from './order.service.js'
 import { MockOrderRepository } from '@repositories/mocks/MockOrderRepository.js'
+import { MockDishRepository } from '@repositories/mocks/MockDishRepository.js'
+import { MockRestaurantRepository } from '@repositories/mocks/MockRestaurantRepository.js'
 import type { Order } from '@models/order.model.js'
 import { OrderNotFoundError, InvalidOrderStatusError } from '@errors/DomainErrors.js'
 
@@ -11,7 +13,7 @@ describe('OrderService.updateItemStatus', () => {
 
     beforeEach(async () => {
         repo = new MockOrderRepository()
-        service = new OrderService(repo)
+        service = new OrderService(repo, new MockDishRepository(), new MockRestaurantRepository())
 
         testOrder = {
             id: 'order-1',
@@ -54,7 +56,7 @@ describe('OrderService autorización y scoping', () => {
 
     beforeEach(async () => {
         repo = new MockOrderRepository()
-        service = new OrderService(repo)
+        service = new OrderService(repo, new MockDishRepository(), new MockRestaurantRepository())
         await repo.create({
             id: 'order-1',
             restaurantId: 'rest-1',

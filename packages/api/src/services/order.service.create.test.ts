@@ -1,7 +1,21 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { OrderService } from './order.service.js'
 import { MockOrderRepository } from '@repositories/mocks/MockOrderRepository.js'
-import { InvalidOrderError } from '@errors/DomainErrors.js'
+import { MockDishRepository } from '@repositories/mocks/MockDishRepository.js'
+import { MockRestaurantRepository } from '@repositories/mocks/MockRestaurantRepository.js'
+import type { Dish } from '@models/dish.model.js'
+import type { Restaurant } from '@models/restaurant.model.js'
+import { InvalidOrderError, RestaurantNotFoundError, DishNotFoundError, DishNotAvailableError } from '@errors/DomainErrors.js'
+
+const restaurant = (id: string): Restaurant => ({
+    id, name: id, address: 'c/1', email: `${id}@x.com`, phone: '600000000',
+    ownerFirstName: 'o', ownerLastName: 'p', logoUrl: null, createdAt: '', updatedAt: ''
+})
+
+const dish = (id: string, restaurantId: string, available = true): Dish => ({
+    id, name: id, description: null, price: 5, category: 'principal', available,
+    restaurantId, ingredients: [], createdAt: '', updatedAt: ''
+})
 
 describe('OrderService.create: validación de entrada', () => {
     let repo: MockOrderRepository
@@ -14,9 +28,19 @@ describe('OrderService.create: validación de entrada', () => {
         items: items as any
     })
 
-    beforeEach(() => {
+    let dishes: MockDishRepository
+    let restaurants: MockRestaurantRepository
+
+    beforeEach(async () => {
         repo = new MockOrderRepository()
-        service = new OrderService(repo)
+        dishes = new MockDishRepository()
+        restaurants = new MockRestaurantRepository()
+        service = new OrderService(repo, dishes, restaurants)
+        await restaurants.save(restaurant('rest-1'))
+        await restaurants.save(restaurant('rest-2'))
+        await dishes.save(dish('d1', 'rest-1'))
+        await dishes.save(dish('otro-restaurante', 'rest-2'))
+        await dishes.save(dish('agotado', 'rest-1', false))
     })
 
     it('crea un ítem por unidad con una petición válida', async () => {
@@ -52,5 +76,38 @@ describe('OrderService.create: validación de entrada', () => {
 
     it('rechaza notas que no son texto', async () => {
         await expect(create([{ dishId: 'd1', quantity: 1, notes: 5 }])).rejects.toThrow(InvalidOrderError)
+    })
+
+    describe('platos y restaurante', () => {
+        it('rechaza un restaurante que no existe', async () => {
+            await expect(service.create({
+                restaurantId: 'no-existe', tableId: null, clientId: null,
+                items: [{ dishId: 'd1', quantity: 1, notes: null }]
+            })).rejects.toThrow(RestaurantNotFoundError)
+            expect(repo.orders).toHaveLength(0)
+        })
+
+        it('rechaza un plato que no existe', async () => {
+            await expect(create([{ dishId: 'fantasma', quantity: 1, notes: null }])).rejects.toThrow(DishNotFoundError)
+            expect(repo.orders).toHaveLength(0)
+        })
+
+        it('rechaza un plato de otro restaurante como si no existiera', async () => {
+            await expect(create([{ dishId: 'otro-restaurante', quantity: 1, notes: null }])).rejects.toThrow(DishNotFoundError)
+            expect(repo.orders).toHaveLength(0)
+        })
+
+        it('rechaza un plato no disponible', async () => {
+            await expect(create([{ dishId: 'agotado', quantity: 1, notes: null }])).rejects.toThrow(DishNotAvailableError)
+            expect(repo.orders).toHaveLength(0)
+        })
+
+        it('no guarda nada si solo falla uno de los platos', async () => {
+            await expect(create([
+                { dishId: 'd1', quantity: 1, notes: null },
+                { dishId: 'agotado', quantity: 1, notes: null }
+            ])).rejects.toThrow(DishNotAvailableError)
+            expect(repo.orders).toHaveLength(0)
+        })
     })
 })

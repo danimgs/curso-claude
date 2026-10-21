@@ -2,7 +2,9 @@ import { randomUUID } from 'crypto'
 import type { Order, OrderItem } from '@models/order.model.js'
 import { normalizeOrderStatus } from '@models/order.model.js'
 import type { OrderRepository } from '@repositories/order.repository.js'
-import { RestaurantIdRequiredError, OrderNotFoundError, InvalidOrderError } from '@errors/DomainErrors.js'
+import type { DishRepository } from '@repositories/dish.repository.js'
+import type { RestaurantRepository } from '@repositories/restaurant.repository.js'
+import { RestaurantIdRequiredError, OrderNotFoundError, InvalidOrderError, RestaurantNotFoundError, DishNotFoundError, DishNotAvailableError } from '@errors/DomainErrors.js'
 
 const MAX_ITEMS = 50
 const MAX_QUANTITY = 20
@@ -26,7 +28,11 @@ export interface OrderActor {
 }
 
 export class OrderService {
-    constructor(private readonly orderRepository: OrderRepository) {}
+    constructor(
+        private readonly orderRepository: OrderRepository,
+        private readonly dishRepository: DishRepository,
+        private readonly restaurantRepository: RestaurantRepository
+    ) {}
 
     async create(request: CreateOrderRequest): Promise<Order> {
         if (!request.restaurantId || request.restaurantId.trim() === '') {
@@ -34,6 +40,7 @@ export class OrderService {
         }
 
         this.validateItems(request.items)
+        await this.validateRestaurantAndDishes(request.restaurantId, request.items)
 
         const items: OrderItem[] = []
         for (const item of request.items) {
@@ -60,6 +67,23 @@ export class OrderService {
         await this.orderRepository.create(order)
 
         return order
+    }
+
+    private async validateRestaurantAndDishes(restaurantId: string, items: CreateOrderRequest['items']): Promise<void> {
+        const restaurant = await this.restaurantRepository.findById(restaurantId)
+        if (!restaurant) {
+            throw new RestaurantNotFoundError()
+        }
+        for (const dishId of new Set(items.map(i => i.dishId))) {
+            const dish = await this.dishRepository.findById(dishId)
+            // Un plato de otro restaurante se trata como inexistente para no confirmar que existe
+            if (!dish || dish.restaurantId !== restaurantId) {
+                throw new DishNotFoundError()
+            }
+            if (!dish.available) {
+                throw new DishNotAvailableError()
+            }
+        }
     }
 
     private validateItems(items: unknown): void {

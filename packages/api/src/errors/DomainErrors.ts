@@ -174,3 +174,9 @@ export class InvalidOrderError extends AppError {
     super(message ?? 'Invalid order')
   }
 }
+
+export class DishNotAvailableError extends AppError {
+  constructor() {
+    super('Dish is not available')
+  }
+}
