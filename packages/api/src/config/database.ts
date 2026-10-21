@@ -6,6 +6,12 @@ import { DatabaseNotInitializedError } from '@errors/DomainErrors.js'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
+export interface TransactionExecutor {
+    run(sql: string, params?: any[]): Promise<sqlite3.RunResult>
+    all<T>(sql: string, params?: any[]): Promise<T[]>
+    get<T>(sql: string, params?: any[]): Promise<T | undefined>
+}
+
 export class Database {
     private db: sqlite3.Database | null = null
     private dbPath: string
@@ -45,7 +51,11 @@ export class Database {
         return this.db
     }
 
-    public async run(sql: string, params: any[] = []): Promise<sqlite3.RunResult> {
+    private txRunning = false
+    private txDone: Promise<void> = Promise.resolve()
+    private releaseTx: () => void = () => {}
+
+    private rawRun(sql: string, params: any[]): Promise<sqlite3.RunResult> {
         return new Promise((resolve, reject) => {
             this.getDb().run(sql, params, function (err) {
                 if (err) return reject(err)
@@ -54,7 +64,7 @@ export class Database {
         })
     }
 
-    public async all<T>(sql: string, params: any[] = []): Promise<T[]> {
+    private rawAll<T>(sql: string, params: any[]): Promise<T[]> {
         return new Promise((resolve, reject) => {
             this.getDb().all(sql, params, (err, rows) => {
                 if (err) return reject(err)
@@ -63,13 +73,55 @@ export class Database {
         })
     }
 
-    public async get<T>(sql: string, params: any[] = []): Promise<T | undefined> {
+    private rawGet<T>(sql: string, params: any[]): Promise<T | undefined> {
         return new Promise((resolve, reject) => {
             this.getDb().get(sql, params, (err, row) => {
                 if (err) return reject(err)
                 resolve(row as T)
             })
         })
+    }
+
+    // Hay una sola conexión compartida: mientras una transacción está abierta,
+    // las consultas de otras peticiones esperan para no colarse dentro de ella.
+    public async run(sql: string, params: any[] = []): Promise<sqlite3.RunResult> {
+        while (this.txRunning) await this.txDone
+        return this.rawRun(sql, params)
+    }
+
+    public async all<T>(sql: string, params: any[] = []): Promise<T[]> {
+        while (this.txRunning) await this.txDone
+        return this.rawAll<T>(sql, params)
+    }
+
+    public async get<T>(sql: string, params: any[] = []): Promise<T | undefined> {
+        while (this.txRunning) await this.txDone
+        return this.rawGet<T>(sql, params)
+    }
+
+    public async transaction<T>(work: (tx: TransactionExecutor) => Promise<T>): Promise<T> {
+        while (this.txRunning) await this.txDone
+        this.txRunning = true
+        this.txDone = new Promise<void>(resolve => { this.releaseTx = resolve })
+
+        try {
+            await this.rawRun('BEGIN', [])
+            try {
+                const result = await work({
+                    run: (sql, params = []) => this.rawRun(sql, params),
+                    all: <R>(sql: string, params: any[] = []) => this.rawAll<R>(sql, params),
+                    get: <R>(sql: string, params: any[] = []) => this.rawGet<R>(sql, params)
+                })
+                await this.rawRun('COMMIT', [])
+                return result
+            } catch (error) {
+                await this.rawRun('ROLLBACK', []).catch(() => undefined)
+                throw error
+            }
+        } finally {
+            this.txRunning = false
+            this.releaseTx()
+        }
     }
 
     public async close(): Promise<void> {
