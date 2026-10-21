@@ -3,6 +3,7 @@ import request from 'supertest'
 import { BcryptAuthService } from '@employee/infrastructure/BcryptAuthService.js'
 import app from '../app.js'
 import { dbConfig } from '@config/database.js'
+import { seedEmployee } from '../test-utils/seedEmployee.js'
 
 const authService = new BcryptAuthService()
 const token = (payload: object) => `Bearer ${authService.generateToken(payload)}`
@@ -22,6 +23,9 @@ describe('API de pedidos: errores', () => {
                 [id, id, 'Calle 1', `${id}@x.com`, '+34 612345678', 'O', 'P', now, now]
             )
         }
+        await seedEmployee(dbConfig, { id: 'cli-1', role: 'cliente' })
+        await seedEmployee(dbConfig, { id: 'coc-2', role: 'cocinero', restaurantId: 'r2' })
+        await seedEmployee(dbConfig, { id: 'a', role: 'admin' })
         await dbConfig.run(
             'INSERT INTO dishes (id, name, description, price, category, available, restaurant_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
             ['d1', 'Pizza', null, 9, 'principal', 1, 'r1', now, now]
