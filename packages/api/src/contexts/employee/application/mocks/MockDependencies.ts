@@ -1,6 +1,7 @@
 import type { IEmployeeRepository } from '@employee/domain/IEmployeeRepository.js'
 import type { IAuthService } from '@employee/domain/IAuthService.js'
 import type { Employee } from '@employee/domain/Employee.js'
+import type { IRestaurantLookup } from '@employee/domain/IRestaurantLookup.js'
 
 export class MockEmployeeRepository implements IEmployeeRepository {
     private employees: Map<string, Employee> = new Map()
@@ -50,5 +51,13 @@ export class MockAuthService implements IAuthService {
 
     generateToken(payload: any): string {
         return `fake-jwt-token-for-${payload.id}`
+    }
+}
+
+export class MockRestaurantLookup implements IRestaurantLookup {
+    constructor(private readonly existing: string[] = []) {}
+
+    async exists(restaurantId: string): Promise<boolean> {
+        return this.existing.includes(restaurantId)
     }
 }

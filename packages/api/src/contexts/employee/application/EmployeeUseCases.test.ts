@@ -1,9 +1,9 @@
-import { MockEmployeeRepository, MockAuthService } from '@employee/application/mocks/MockDependencies.js'
+import { MockEmployeeRepository, MockAuthService, MockRestaurantLookup } from '@employee/application/mocks/MockDependencies.js'
 import { CreateEmployeeUseCase } from '@employee/application/CreateEmployeeUseCase.js'
 import { LoginUseCase } from '@employee/application/LoginUseCase.js'
 import { Employee } from '@employee/domain/Employee.js'
 import { describe, it, expect, beforeEach } from 'vitest'
-import { WeakPasswordError } from '@errors/DomainErrors.js'
+import { WeakPasswordError, RestaurantNotFoundError } from '@errors/DomainErrors.js'
 
 describe('Employee Application Use Cases', () => {
     let employeeRepo: MockEmployeeRepository
@@ -14,7 +14,7 @@ describe('Employee Application Use Cases', () => {
     beforeEach(() => {
         employeeRepo = new MockEmployeeRepository()
         authService = new MockAuthService()
-        createEmployeeUseCase = new CreateEmployeeUseCase(employeeRepo, authService)
+        createEmployeeUseCase = new CreateEmployeeUseCase(employeeRepo, authService, new MockRestaurantLookup(['r1']))
         loginUseCase = new LoginUseCase(employeeRepo, authService)
     })
 
@@ -83,6 +83,26 @@ describe('Employee Application Use Cases', () => {
             await expect(createEmployeeUseCase.execute({
                 ...base, email: 'Alice@Resttek.com', passwordPlain: 'passwordSegura2'
             })).rejects.toThrow('Email is already in use')
+        })
+    })
+
+    describe('CreateEmployeeUseCase: restaurante', () => {
+        const base = { firstName: 'Alice', lastName: 'Smith', email: 'alice@resttek.com', passwordPlain: 'passwordSegura1', role: 'manager' }
+
+        it('should reject a restaurant that does not exist', async () => {
+            await expect(createEmployeeUseCase.execute({ ...base, restaurantId: 'no-existe' }))
+                .rejects.toThrow(RestaurantNotFoundError)
+            expect(await employeeRepo.findByEmail('alice@resttek.com')).toBeNull()
+        })
+
+        it('should accept an existing restaurant', async () => {
+            const employee = await createEmployeeUseCase.execute({ ...base, restaurantId: 'r1' })
+            expect(employee.restaurantId).toBe('r1')
+        })
+
+        it('should accept no restaurant (null)', async () => {
+            const employee = await createEmployeeUseCase.execute({ ...base, role: 'admin', restaurantId: null })
+            expect(employee.restaurantId).toBeNull()
         })
     })
 
