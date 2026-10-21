@@ -2,7 +2,11 @@ import { randomUUID } from 'crypto'
 import type { Order, OrderItem } from '@models/order.model.js'
 import { normalizeOrderStatus } from '@models/order.model.js'
 import type { OrderRepository } from '@repositories/order.repository.js'
-import { RestaurantIdRequiredError, OrderNotFoundError } from '@errors/DomainErrors.js'
+import { RestaurantIdRequiredError, OrderNotFoundError, InvalidOrderError } from '@errors/DomainErrors.js'
+
+const MAX_ITEMS = 50
+const MAX_QUANTITY = 20
+const MAX_NOTES_LENGTH = 200
 
 export interface CreateOrderRequest {
     restaurantId: string
@@ -29,6 +33,8 @@ export class OrderService {
             throw new RestaurantIdRequiredError()
         }
 
+        this.validateItems(request.items)
+
         const items: OrderItem[] = []
         for (const item of request.items) {
             for (let i = 0; i < item.quantity; i++) {
@@ -54,6 +60,26 @@ export class OrderService {
         await this.orderRepository.create(order)
 
         return order
+    }
+
+    private validateItems(items: unknown): void {
+        if (!Array.isArray(items) || items.length === 0 || items.length > MAX_ITEMS) {
+            throw new InvalidOrderError(`items debe ser una lista de 1 a ${MAX_ITEMS} elementos`)
+        }
+        for (const item of items) {
+            if (typeof item !== 'object' || item === null) {
+                throw new InvalidOrderError('Cada elemento de items debe ser un objeto')
+            }
+            if (typeof item.dishId !== 'string' || item.dishId.trim() === '') {
+                throw new InvalidOrderError('dishId es obligatorio')
+            }
+            if (!Number.isInteger(item.quantity) || item.quantity < 1 || item.quantity > MAX_QUANTITY) {
+                throw new InvalidOrderError(`quantity debe ser un entero entre 1 y ${MAX_QUANTITY}`)
+            }
+            if (item.notes != null && (typeof item.notes !== 'string' || item.notes.length > MAX_NOTES_LENGTH)) {
+                throw new InvalidOrderError(`notes debe ser texto de como máximo ${MAX_NOTES_LENGTH} caracteres`)
+            }
+        }
     }
 
     async listActive(restaurantId: string): Promise<Order[]> {

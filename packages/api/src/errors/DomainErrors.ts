@@ -168,3 +168,9 @@ export class WeakPasswordError extends AppError {
     super('Password must be at least 10 characters long and different from the email')
   }
 }
+
+export class InvalidOrderError extends AppError {
+  constructor(message?: string) {
+    super(message ?? 'Invalid order')
+  }
+}
