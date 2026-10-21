@@ -133,11 +133,13 @@ Las validaciones de la Fase 2 y 4 se implementan con funciones propias en los se
 
 ### Fase 3: configuración, dependencias y frontend
 
+> Ajuste en T23: `npm audit fix` falla con un error interno de npm, y `npm update` global sube `@angular/build` a 21.2.27, que rompe el build de los frontends ("asset path must be within the workspace root", por los assets de `../web-shared`). Se aplicó `npm update --workspace=@resttek/api` y se dejó Angular en 21.2.7 / `@angular/build` 21.2.6. Quedan 14 avisos (de 44) que requieren saltos mayores: `sqlite3@6`, `vitest@5` y herramientas de Angular. Ver riesgos.
+
 - [x] **T19** (~5 min) — Instalar `helmet` y aplicarlo, desactivar `x-powered-by` y fijar el límite de `express.json` en 100 kb · `packages/api/package.json`, `src/app.ts`
 - [x] **T20** (~10 min) — Configurar CORS con lista blanca desde `CORS_ORIGINS` (por defecto los puertos 4200-4202 en desarrollo) · `src/config/env.ts`, `src/app.ts`
 - [x] **T21** (~10 min) — Firmar el JWT con `issuer`, `audience` y `expiresIn` configurable (por defecto 1 h), y verificarlo con `algorithms: ['HS256']`, `issuer` y `audience` · `BcryptAuthService.ts`, `middlewares.ts`
 - [x] **T22** (~10 min) — Revalidar en `authenticate` que el empleado existe y usar su rol y `restaurantId` actuales, con test de empleado eliminado · `middlewares.ts`
-- [ ] **T23** (~10 min) — Ejecutar `npm audit fix`, actualizar `@angular/*` y `vite` dentro de 21.x, y confirmar que compilan los tres frontends y pasan los tests de la API · `package.json`, `package-lock.json`
+- [x] **T23** (~10 min) — Ejecutar `npm audit fix`, actualizar `@angular/*` y `vite` dentro de 21.x, y confirmar que compilan los tres frontends y pasan los tests de la API · `package.json`, `package-lock.json`
 - [ ] **T24** (~10 min) — Crear `roleGuard` funcional que lea `route.data['roles']` y redirija si no coincide · `packages/web-shared/src/lib/auth/role.guard.ts`, `packages/web-shared/src/index.ts`
 - [ ] **T25** (~5 min) — Aplicar `roleGuard` con los roles permitidos a `/cocina`, `/barra` y `/salon` · `packages/web-empleados/src/app/app.routes.ts`
 - [ ] **T26** (~10 min) — Dejar de enviar `restaurantId` desde el cliente en las consultas de pedidos activos, ya que la API lo deriva del token · `web-empleados/src/app/features/orders/services/order.service.ts`, páginas `cocina`, `barra` y `salon`
@@ -187,6 +189,6 @@ Las validaciones de la Fase 2 y 4 se implementan con funciones propias en los se
 - **S-08 y H-02**: no se implementa un refresh token revocable ni la cookie `HttpOnly`. Habría que decidirlo aparte, porque afecta a los cuatro frontends.
 - **Compatibilidad del frontend**: T9 y T26 cambian el contrato de `GET /orders/active`. Deben desplegarse juntos, o la API debe seguir aceptando el parámetro para `admin`.
 - **Rotación del secreto**: al fijar `issuer` y `audience` (T21), los tokens emitidos antes quedan invalidados y los usuarios deben volver a iniciar sesión.
-- **Actualización de dependencias**: `npm audit fix` puede introducir cambios incompatibles en Angular o `sqlite3@6`. Se debe compilar y probar tras T23.
+- **Actualización de dependencias**: `@angular/build` ≥ 21.2.27 exige que los assets estén dentro del workspace root y los frontends cargan `../web-shared/src/lib/assets`. Para subir Angular hay que mover o copiar esos assets. `sqlite3@6` (tar/node-gyp, solo en instalación) y `vitest@5` (solo desarrollo) siguen pendientes por ser cambios incompatibles.
 - **docs/api/api-pagination.md** no existe en el repositorio, así que no se pudo consultar para T27.
 - **Dev server**: los avisos de `vite` solo afectan al servidor de desarrollo. No exponerlo fuera de localhost.
