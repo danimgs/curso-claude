@@ -106,6 +106,25 @@ describe('Employee Application Use Cases', () => {
         })
     })
 
+    describe('LoginUseCase: tiempos', () => {
+        it('should still compare a password when the email does not exist', async () => {
+            const calls: string[] = []
+            const spyAuth = new MockAuthService()
+            const original = spyAuth.comparePasswords.bind(spyAuth)
+            spyAuth.comparePasswords = async (provided, stored) => {
+                calls.push(stored)
+                return original(provided, stored)
+            }
+            const useCase = new LoginUseCase(employeeRepo, spyAuth)
+
+            await expect(useCase.execute({ email: 'nobody@resttek.com', passwordRaw: 'password123' }))
+                .rejects.toThrow('Invalid credentials')
+
+            expect(calls).toHaveLength(1)
+            expect(calls[0]).toMatch(/^\$2[aby]\$10\$/)
+        })
+    })
+
     describe('LoginUseCase', () => {
         it('should log in ignoring email case and surrounding spaces', async () => {
             await employeeRepo.save(Employee.create({

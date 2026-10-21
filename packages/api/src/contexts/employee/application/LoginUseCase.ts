@@ -2,6 +2,9 @@ import type { IEmployeeRepository } from '@employee/domain/IEmployeeRepository.j
 import type { IAuthService } from '@employee/domain/IAuthService.js'
 import { InvalidCredentialsError } from '@errors/DomainErrors.js'
 
+// Hash bcrypt (coste 10) de una contraseña que nadie conoce
+const DUMMY_PASSWORD_HASH = '$2b$10$NtLjDjpoBnhGdXhCYUZSFu8ZyhTFqCcXB6UBjlYSl9xpSAD5HVrdC'
+
 export interface LoginDTO {
     email: string
     passwordRaw: string
@@ -30,6 +33,9 @@ export class LoginUseCase {
         const employee = await this.employeeRepository.findByEmail(email)
 
         if (!employee) {
+            // Se compara igualmente contra un hash ficticio para que el tiempo de respuesta
+            // no delate si el email existe.
+            await this.authService.comparePasswords(dto.passwordRaw, DUMMY_PASSWORD_HASH)
             throw new InvalidCredentialsError()
         }
 

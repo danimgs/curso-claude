@@ -148,7 +148,7 @@ Las validaciones de la Fase 2 y 4 se implementan con funciones propias en los se
 
 - [x] **T27** (~5 min) — Acotar `limit` de `listEmployees` a un máximo de 100 · `EmployeeController.ts`, `SqliteEmployeeRepository.ts`
 - [x] **T28** (~10 min) — Validar que el restaurante existe en `POST /employees` y en el alta de empleados de un restaurante · `CreateEmployeeUseCase.ts`
-- [ ] **T29** (~5 min) — Ejecutar siempre una comparación bcrypt contra un hash ficticio cuando el email no existe en login · `LoginUseCase.ts`
+- [x] **T29** (~5 min) — Ejecutar siempre una comparación bcrypt contra un hash ficticio cuando el email no existe en login · `LoginUseCase.ts`
 - [ ] **T30** (~10 min) — Devolver un DTO público (`id`, `name`, `address`, `logoUrl`) en `/public/restaurants`, sin email, teléfono ni propietario · `controllers/restaurant.controller.ts`
 - [ ] **T31** (~10 min) — Añadir `OrderNotFoundError` a los 404 del `errorHandler`, tratar `SyntaxError` de JSON como 400 y registrar los 500 · `errorHandler.ts`
 - [ ] **T32** (~10 min) — Validar `price` y `currentStock` con `Number.isFinite`, longitud de `name` y que los ingredientes sean un array del mismo restaurante · `services/dish.service.ts`, `services/ingredient.service.ts`
