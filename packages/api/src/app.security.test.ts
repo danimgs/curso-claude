@@ -41,3 +41,21 @@ describe('app: CORS con lista blanca', () => {
         expect(res.headers['access-control-allow-origin']).toBeUndefined()
     })
 })
+
+describe('app: cuerpos de petición', () => {
+    it('rechaza cuerpos JSON de más de 100 kb con 413', async () => {
+        const res = await request(app)
+            .post('/api/v1/auth/register')
+            .send({ firstName: 'a', lastName: 'b', email: 'a@b.com', password: 'x'.repeat(200 * 1024) })
+        expect(res.status).toBe(413)
+    })
+
+    it('responde 400 a un JSON malformado', async () => {
+        const res = await request(app)
+            .post('/api/v1/auth/register')
+            .set('Content-Type', 'application/json')
+            .send('{"email": ')
+        expect(res.status).toBe(400)
+        expect(res.body.error).toBe('InvalidJson')
+    })
+})
