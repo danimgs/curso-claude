@@ -2,7 +2,7 @@
 
 - **Tipo**: bug
 - **Fecha**: 2026-10-21
-- **Estado**: pendiente
+- **Estado**: en curso
 
 ## 1. Contexto
 
@@ -106,6 +106,8 @@ Las validaciones de la Fase 2 y 4 se implementan con funciones propias en los se
 > Cada tarea debe poder completarse en 5-10 minutos. Si una es mayor, se divide.
 
 ### Fase 1: críticos
+
+> T1 a T11 se implementaron y verificaron antes de adoptar el flujo TDD con un commit por tarea (80 tests y 21 comprobaciones HTTP en verde). Van en el commit inicial del repositorio. El flujo TDD estricto empieza en T12.
 
 - [x] **T1** (~10 min) — Crear el módulo de configuración con `JWT_SECRET`, que aborta en producción si falta o es el valor antiguo · `packages/api/src/config/env.ts`
 - [x] **T2** (~5 min) — Sustituir la constante duplicada por el import de `env.ts` en `middlewares.ts` y `BcryptAuthService.ts`, y cargar `dotenv/config` al inicio de `server.ts` · `packages/api/src/contexts/shared/infrastructure/http/middlewares.ts`, `packages/api/src/contexts/employee/infrastructure/BcryptAuthService.ts`, `packages/api/src/server.ts`
