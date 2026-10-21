@@ -13,9 +13,8 @@ export class CocinaComponent implements OnInit, OnDestroy {
   readonly orderStore = inject(OrderStore);
 
   ngOnInit(): void {
-    const restaurantId = this.authStore.user()?.restaurantId;
-    if (restaurantId) {
-      this.orderStore.startPolling(restaurantId);
+    if (this.authStore.user()?.restaurantId) {
+      this.orderStore.startPolling();
     }
   }
 

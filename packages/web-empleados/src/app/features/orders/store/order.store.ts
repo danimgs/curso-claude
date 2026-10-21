@@ -17,11 +17,11 @@ export class OrderStore {
   readonly loading = this._loading.asReadonly();
   readonly error = this._error.asReadonly();
 
-  async loadOrders(restaurantId: string): Promise<void> {
+  async loadOrders(): Promise<void> {
     this._loading.set(true);
     this._error.set(null);
     try {
-      const orders = await firstValueFrom(this.orderService.getActiveOrders(restaurantId));
+      const orders = await firstValueFrom(this.orderService.getActiveOrders());
       this._orders.set(orders);
     } catch (err: any) {
       this._error.set(err.message || 'Error al cargar pedidos');
@@ -51,10 +51,10 @@ export class OrderStore {
     }
   }
 
-  startPolling(restaurantId: string): void {
-    this.loadOrders(restaurantId);
+  startPolling(): void {
+    this.loadOrders();
     this.pollingInterval = setInterval(() => {
-      this.loadOrders(restaurantId);
+      this.loadOrders();
     }, 30000);
   }
 

@@ -142,7 +142,7 @@ Las validaciones de la Fase 2 y 4 se implementan con funciones propias en los se
 - [x] **T23** (~10 min) — Ejecutar `npm audit fix`, actualizar `@angular/*` y `vite` dentro de 21.x, y confirmar que compilan los tres frontends y pasan los tests de la API · `package.json`, `package-lock.json`
 - [x] **T24** (~10 min) — Crear `roleGuard` funcional que lea `route.data['roles']` y redirija si no coincide · `packages/web-shared/src/lib/auth/role.guard.ts`, `packages/web-shared/src/index.ts`
 - [x] **T25** (~5 min) — Aplicar `roleGuard` con los roles permitidos a `/cocina`, `/barra` y `/salon` · `packages/web-empleados/src/app/app.routes.ts`
-- [ ] **T26** (~10 min) — Dejar de enviar `restaurantId` desde el cliente en las consultas de pedidos activos, ya que la API lo deriva del token · `web-empleados/src/app/features/orders/services/order.service.ts`, páginas `cocina`, `barra` y `salon`
+- [x] **T26** (~10 min) — Dejar de enviar `restaurantId` desde el cliente en las consultas de pedidos activos, ya que la API lo deriva del token · `web-empleados/src/app/features/orders/services/order.service.ts`, páginas `cocina`, `barra` y `salon`
 
 ### Fase 4: resto
 
