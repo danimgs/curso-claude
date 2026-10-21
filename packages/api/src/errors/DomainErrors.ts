@@ -162,3 +162,9 @@ export class OrderNotFoundError extends AppError {
   }
 }
 
+
+export class WeakPasswordError extends AppError {
+  constructor() {
+    super('Password must be at least 10 characters long and different from the email')
+  }
+}
