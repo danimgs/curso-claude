@@ -26,7 +26,8 @@ export class LoginUseCase {
     ) {}
 
     async execute(dto: LoginDTO): Promise<LoginResponse> {
-        const employee = await this.employeeRepository.findByEmail(dto.email)
+        const email = typeof dto.email === 'string' ? dto.email.trim().toLowerCase() : dto.email
+        const employee = await this.employeeRepository.findByEmail(email)
 
         if (!employee) {
             throw new InvalidCredentialsError()

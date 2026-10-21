@@ -3,6 +3,7 @@ import { CreateEmployeeUseCase } from '@employee/application/CreateEmployeeUseCa
 import { LoginUseCase } from '@employee/application/LoginUseCase.js'
 import { Employee } from '@employee/domain/Employee.js'
 import { describe, it, expect, beforeEach } from 'vitest'
+import { WeakPasswordError } from '@errors/DomainErrors.js'
 
 describe('Employee Application Use Cases', () => {
     let employeeRepo: MockEmployeeRepository
@@ -45,7 +46,7 @@ describe('Employee Application Use Cases', () => {
                 firstName: 'Alice',
                 lastName: 'Smith',
                 email: 'alice@resttek.com',
-                passwordPlain: 'pass',
+                passwordPlain: 'passwordSegura1',
                 role: 'manager',
                 restaurantId: 'r1'
             })
@@ -54,14 +55,53 @@ describe('Employee Application Use Cases', () => {
                 firstName: 'Bob',
                 lastName: 'Jones',
                 email: 'alice@resttek.com',
-                passwordPlain: 'pass2',
+                passwordPlain: 'passwordSegura2',
                 role: 'camarero',
                 restaurantId: 'r1'
             })).rejects.toThrow('Email is already in use')
         })
     })
 
+    describe('CreateEmployeeUseCase: contraseña y email', () => {
+        const base = { firstName: 'Alice', lastName: 'Smith', role: 'manager', restaurantId: 'r1' }
+
+        it('should reject a weak password', async () => {
+            await expect(createEmployeeUseCase.execute({
+                ...base, email: 'alice@resttek.com', passwordPlain: 'corta'
+            })).rejects.toThrow(WeakPasswordError)
+        })
+
+        it('should reject a password equal to the email', async () => {
+            await expect(createEmployeeUseCase.execute({
+                ...base, email: 'alice@resttek.com', passwordPlain: 'alice@resttek.com'
+            })).rejects.toThrow(WeakPasswordError)
+        })
+
+        it('should treat emails that differ only in case as duplicated', async () => {
+            await createEmployeeUseCase.execute({ ...base, email: 'alice@resttek.com', passwordPlain: 'passwordSegura1' })
+
+            await expect(createEmployeeUseCase.execute({
+                ...base, email: 'Alice@Resttek.com', passwordPlain: 'passwordSegura2'
+            })).rejects.toThrow('Email is already in use')
+        })
+    })
+
     describe('LoginUseCase', () => {
+        it('should log in ignoring email case and surrounding spaces', async () => {
+            await employeeRepo.save(Employee.create({
+                id: '9',
+                firstName: 'Admin',
+                lastName: 'User',
+                email: 'admin@resttek.com',
+                passwordHash: 'hashed_password123',
+                role: 'admin',
+                restaurantId: null
+            }))
+
+            const result = await loginUseCase.execute({ email: ' Admin@Resttek.COM ', passwordRaw: 'password123' })
+            expect(result.employee.id).toBe('9')
+        })
+
         it('should return token for valid credentials', async () => {
             const employee = Employee.create({
                 id: '123',
