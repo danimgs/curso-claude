@@ -11,6 +11,7 @@ import dishRoutes from '@routes/dish.routes.js'
 import publicRestaurantRoutes from '@routes/restaurant.public.routes.js'
 import publicDishRoutes from '@routes/dish.public.routes.js'
 import orderRoutes from '@routes/order.routes.js'
+import { CORS_ORIGINS } from '@config/env.js'
 import { errorHandler } from '@shared/infrastructure/http/errorHandler.js'
 
 const app = express()
@@ -25,7 +26,7 @@ const authLimiter = (max: number, windowMs: number) => rateLimit({
 
 app.disable('x-powered-by')
 app.use(helmet())
-app.use(cors())
+app.use(cors({ origin: CORS_ORIGINS }))
 app.use(express.json({ limit: '100kb' }))
 
 app.use('/api/v1/auth/login', authLimiter(10, 15 * 60 * 1000))

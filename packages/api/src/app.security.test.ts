@@ -29,3 +29,15 @@ describe('app: cabeceras de seguridad', () => {
         expect(res.headers['x-powered-by']).toBeUndefined()
     })
 })
+
+describe('app: CORS con lista blanca', () => {
+    it('permite los orígenes de desarrollo por defecto', async () => {
+        const res = await request(app).get('/health').set('Origin', 'http://localhost:4201')
+        expect(res.headers['access-control-allow-origin']).toBe('http://localhost:4201')
+    })
+
+    it('no concede CORS a un origen no permitido', async () => {
+        const res = await request(app).get('/health').set('Origin', 'https://sitio-malicioso.example')
+        expect(res.headers['access-control-allow-origin']).toBeUndefined()
+    })
+})

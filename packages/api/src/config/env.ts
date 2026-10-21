@@ -17,3 +17,17 @@ function resolveJwtSecret(): string {
 }
 
 export const JWT_SECRET: string = resolveJwtSecret()
+
+const DEV_CORS_ORIGINS = ['http://localhost:4200', 'http://localhost:4201', 'http://localhost:4202']
+
+function resolveCorsOrigins(): string[] {
+    const configured = (process.env.CORS_ORIGINS ?? '')
+        .split(',')
+        .map(origin => origin.trim())
+        .filter(origin => origin !== '')
+
+    if (configured.length > 0) return configured
+    return process.env.NODE_ENV === 'production' ? [] : DEV_CORS_ORIGINS
+}
+
+export const CORS_ORIGINS: string[] = resolveCorsOrigins()
