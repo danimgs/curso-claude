@@ -31,3 +31,13 @@ function resolveCorsOrigins(): string[] {
 }
 
 export const CORS_ORIGINS: string[] = resolveCorsOrigins()
+
+export const JWT_ISSUER = 'resttek'
+export const JWT_AUDIENCE = 'resttek-web'
+
+function resolveJwtExpiresInSeconds(): number {
+    const seconds = Number(process.env.JWT_EXPIRES_IN_SECONDS)
+    return Number.isInteger(seconds) && seconds > 0 ? seconds : 3600
+}
+
+export const JWT_EXPIRES_IN_SECONDS: number = resolveJwtExpiresInSeconds()

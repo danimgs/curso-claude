@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import request from 'supertest'
-import jwt from 'jsonwebtoken'
+import { BcryptAuthService } from '@employee/infrastructure/BcryptAuthService.js'
 import app from '../app.js'
 import { dbConfig } from '@config/database.js'
-import { JWT_SECRET } from '@config/env.js'
 
-const token = (payload: object) => `Bearer ${jwt.sign(payload, JWT_SECRET)}`
+const authService = new BcryptAuthService()
+const token = (payload: object) => `Bearer ${authService.generateToken(payload)}`
 const cliente = token({ id: 'cli-1', role: 'cliente', restaurantId: null })
 const cocineroR2 = token({ id: 'coc-2', role: 'cocinero', restaurantId: 'r2' })
 const now = new Date().toISOString()

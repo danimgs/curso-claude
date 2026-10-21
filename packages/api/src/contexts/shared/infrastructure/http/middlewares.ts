@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
-import { JWT_SECRET } from '@config/env.js'
+import { JWT_SECRET, JWT_ISSUER, JWT_AUDIENCE } from '@config/env.js'
 
 export interface AuthUser {
     id: string
@@ -27,7 +27,11 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
     }
 
     try {
-        const decoded = jwt.verify(token, JWT_SECRET)
+        const decoded = jwt.verify(token, JWT_SECRET, {
+            algorithms: ['HS256'],
+            issuer: JWT_ISSUER,
+            audience: JWT_AUDIENCE
+        })
         req.user = decoded as AuthUser
         next()
     } catch {
