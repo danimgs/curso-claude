@@ -1,0 +1,19 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=$(jq -r \".tool_input.file_path // empty\"); case \"$f\" in */src/CONSTANTS.js|src/CONSTANTS.js) echo \"Bloqueado: la lectura de src/CONSTANTS.js no está permitida.\" >&2; exit 2;; esac; exit 0",
+            "statusMessage": "Comprobando archivo protegido..."
+          }
+        ]
+      }
+    ]
+  },
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  }
+}
