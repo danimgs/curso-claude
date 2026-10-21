@@ -129,7 +129,7 @@ Las validaciones de la Fase 2 y 4 se implementan con funciones propias en los se
 - [x] **T15** (~10 min) — Validar `items` (array de 1 a 50), `quantity` (entero de 1 a 20) y `notes` (máx. 200 caracteres) en la creación de pedidos, con tests · `services/order.service.ts`
 - [x] **T16** (~10 min) — Validar que el restaurante existe y que cada `dishId` pertenece al restaurante y está disponible al crear el pedido · `services/order.service.ts`, `repositories/dish.repository.ts`
 - [x] **T17** (~10 min) — Insertar el pedido y sus ítems en una transacción SQLite en el repositorio de pedidos · `repositories/order.repository.ts`
-- [ ] **T18** (~5 min) — Reemplazar el `catch` con `error.message` por `next(error)` en `createOrder` y `updateItemStatus` · `controllers/order.controller.ts`
+- [x] **T18** (~5 min) — Reemplazar el `catch` con `error.message` por `next(error)` en `createOrder` y `updateItemStatus` · `controllers/order.controller.ts`
 
 ### Fase 3: configuración, dependencias y frontend
 
