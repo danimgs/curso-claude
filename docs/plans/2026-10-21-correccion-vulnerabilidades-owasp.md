@@ -146,10 +146,12 @@ Las validaciones de la Fase 2 y 4 se implementan con funciones propias en los se
 
 ### Fase 4: resto
 
+> Ajuste en T30: el DTO público conserva `phone` (además de `id`, `name`, `address` y `logoUrl`) porque `web-clientes` lo muestra en el listado; se retiran `email`, los datos del propietario y las fechas. T30 corrige además una regresión de la Fase 1: `GET /public/restaurants/:id` reutilizaba `getById`, que pasó a exigir admin o restaurante propio, y devolvía 403 sin token. Ahora tiene su propio manejador.
+
 - [x] **T27** (~5 min) — Acotar `limit` de `listEmployees` a un máximo de 100 · `EmployeeController.ts`, `SqliteEmployeeRepository.ts`
 - [x] **T28** (~10 min) — Validar que el restaurante existe en `POST /employees` y en el alta de empleados de un restaurante · `CreateEmployeeUseCase.ts`
 - [x] **T29** (~5 min) — Ejecutar siempre una comparación bcrypt contra un hash ficticio cuando el email no existe en login · `LoginUseCase.ts`
-- [ ] **T30** (~10 min) — Devolver un DTO público (`id`, `name`, `address`, `logoUrl`) en `/public/restaurants`, sin email, teléfono ni propietario · `controllers/restaurant.controller.ts`
+- [x] **T30** (~10 min) — Devolver un DTO público (`id`, `name`, `address`, `logoUrl`) en `/public/restaurants`, sin email, teléfono ni propietario · `controllers/restaurant.controller.ts`
 - [ ] **T31** (~10 min) — Añadir `OrderNotFoundError` a los 404 del `errorHandler`, tratar `SyntaxError` de JSON como 400 y registrar los 500 · `errorHandler.ts`
 - [ ] **T32** (~10 min) — Validar `price` y `currentStock` con `Number.isFinite`, longitud de `name` y que los ingredientes sean un array del mismo restaurante · `services/dish.service.ts`, `services/ingredient.service.ts`
 - [ ] **T33** (~5 min) — Validar `logoUrl` con `new URL()` aceptando solo `https:` · `services/restaurant.service.ts`
