@@ -193,7 +193,7 @@ Respuesta (`toJSON`): `{ id, restaurantId, number, description, capacity, status
 
 - [x] **T20** (~10 min) — Crear modelo, `TableService` (`getTables`, `updateStatus`) y `TableStore` con polling 30 s · `packages/web-empleados/src/app/features/tables/{models,services,store}/`
 - [x] **T21** (~10 min) — Crear `MesasComponent`: tarjetas por mesa con estado y `<select>` para cambiarlo · `packages/web-empleados/src/app/features/tables/pages/mesas/mesas.component.ts`
-- [ ] **T22** (~10 min) — Mostrar en las mesas ocupadas los pedidos activos de `OrderStore` con `tableId === mesa.id` y el estado de cada ítem (iniciar/parar polling de ambos stores) · `mesas.component.ts`
+- [x] **T22** (~10 min) — Mostrar en las mesas ocupadas los pedidos activos de `OrderStore` con `tableId === mesa.id` y el estado de cada ítem (iniciar/parar polling de ambos stores) · `mesas.component.ts`
 - [ ] **T23** (~5 min) — Añadir la ruta `mesas` (`roleGuard` camarero/manager) y el enlace en el menú del shell · `packages/web-empleados/src/app/app.routes.ts`, `core/layout/shell.component.ts`
 
 **web-clientes**
