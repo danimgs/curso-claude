@@ -3,9 +3,11 @@ import { OrderService } from './order.service.js'
 import { MockOrderRepository } from '@repositories/mocks/MockOrderRepository.js'
 import { MockDishRepository } from '@repositories/mocks/MockDishRepository.js'
 import { MockRestaurantRepository } from '@repositories/mocks/MockRestaurantRepository.js'
+import { MockTableRepository } from '@repositories/mocks/MockTableRepository.js'
+import type { Table, TableStatusType } from '@models/table.model.js'
 import type { Dish } from '@models/dish.model.js'
 import type { Restaurant } from '@models/restaurant.model.js'
-import { InvalidOrderError, RestaurantNotFoundError, DishNotFoundError, DishNotAvailableError } from '@errors/DomainErrors.js'
+import { InvalidOrderError, RestaurantNotFoundError, DishNotFoundError, DishNotAvailableError, TableNotFoundError, TableNotOccupiedError } from '@errors/DomainErrors.js'
 
 const restaurant = (id: string): Restaurant => ({
     id, name: id, address: 'c/1', email: `${id}@x.com`, phone: '600000000',
@@ -15,6 +17,10 @@ const restaurant = (id: string): Restaurant => ({
 const dish = (id: string, restaurantId: string, available = true): Dish => ({
     id, name: id, description: null, price: 5, category: 'principal', available,
     restaurantId, ingredients: [], createdAt: '', updatedAt: ''
+})
+
+const table = (id: string, restaurantId: string, status: TableStatusType): Table => ({
+    id, restaurantId, number: 1, description: null, capacity: 4, status, createdAt: '', updatedAt: ''
 })
 
 describe('OrderService.create: validación de entrada', () => {
@@ -30,12 +36,14 @@ describe('OrderService.create: validación de entrada', () => {
 
     let dishes: MockDishRepository
     let restaurants: MockRestaurantRepository
+    let tables: MockTableRepository
 
     beforeEach(async () => {
         repo = new MockOrderRepository()
         dishes = new MockDishRepository()
         restaurants = new MockRestaurantRepository()
-        service = new OrderService(repo, dishes, restaurants)
+        tables = new MockTableRepository()
+        service = new OrderService(repo, dishes, restaurants, tables)
         await restaurants.save(restaurant('rest-1'))
         await restaurants.save(restaurant('rest-2'))
         await dishes.save(dish('d1', 'rest-1'))
@@ -108,6 +116,49 @@ describe('OrderService.create: validación de entrada', () => {
                 { dishId: 'agotado', quantity: 1, notes: null }
             ])).rejects.toThrow(DishNotAvailableError)
             expect(repo.orders).toHaveLength(0)
+        })
+    })
+
+    describe('mesa', () => {
+        const createWithTable = (tableId: unknown, items: unknown = [{ dishId: 'd1', quantity: 1, notes: null }]) => service.create({
+            restaurantId: 'rest-1', tableId: tableId as any, clientId: 'cliente-1', items: items as any
+        })
+
+        beforeEach(async () => {
+            await tables.save(table('ocupada', 'rest-1', 'ocupada'))
+            await tables.save(table('libre', 'rest-1', 'libre'))
+            await tables.save(table('reservada', 'rest-1', 'reservada'))
+            await tables.save(table('ajena', 'rest-2', 'ocupada'))
+        })
+
+        it('crea el pedido asociado a una mesa ocupada del restaurante', async () => {
+            const order = await createWithTable('ocupada')
+            expect(order.tableId).toBe('ocupada')
+            expect(repo.orders).toHaveLength(1)
+        })
+
+        it('sigue aceptando pedidos sin mesa', async () => {
+            const order = await createWithTable(null)
+            expect(order.tableId).toBeNull()
+        })
+
+        it.each(['fantasma', 'ajena'])('rechaza la mesa %s con TableNotFoundError', async (tableId) => {
+            await expect(createWithTable(tableId)).rejects.toThrow(TableNotFoundError)
+            expect(repo.orders).toHaveLength(0)
+        })
+
+        it.each(['libre', 'reservada'])('rechaza una mesa %s con TableNotOccupiedError', async (tableId) => {
+            await expect(createWithTable(tableId)).rejects.toThrow(TableNotOccupiedError)
+            expect(repo.orders).toHaveLength(0)
+        })
+
+        it.each([5, true, {}])('rechaza tableId %o que no es texto', async (tableId) => {
+            await expect(createWithTable(tableId)).rejects.toThrow('tableId debe ser texto o null')
+            expect(repo.orders).toHaveLength(0)
+        })
+
+        it('valida la mesa después de los platos', async () => {
+            await expect(createWithTable('libre', [{ dishId: 'fantasma', quantity: 1, notes: null }])).rejects.toThrow(DishNotFoundError)
         })
     })
 })
