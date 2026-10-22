@@ -3,6 +3,7 @@ import { OrderService } from './order.service.js'
 import { MockOrderRepository } from '@repositories/mocks/MockOrderRepository.js'
 import { MockDishRepository } from '@repositories/mocks/MockDishRepository.js'
 import { MockRestaurantRepository } from '@repositories/mocks/MockRestaurantRepository.js'
+import { MockTableRepository } from '@repositories/mocks/MockTableRepository.js'
 import type { Order } from '@models/order.model.js'
 import { OrderNotFoundError, InvalidOrderStatusError, InvalidStatusTransitionError } from '@errors/DomainErrors.js'
 
@@ -13,7 +14,7 @@ describe('OrderService.updateItemStatus', () => {
 
     beforeEach(async () => {
         repo = new MockOrderRepository()
-        service = new OrderService(repo, new MockDishRepository(), new MockRestaurantRepository())
+        service = new OrderService(repo, new MockDishRepository(), new MockRestaurantRepository(), new MockTableRepository())
 
         testOrder = {
             id: 'order-1',
@@ -56,7 +57,7 @@ describe('OrderService autorización y scoping', () => {
 
     beforeEach(async () => {
         repo = new MockOrderRepository()
-        service = new OrderService(repo, new MockDishRepository(), new MockRestaurantRepository())
+        service = new OrderService(repo, new MockDishRepository(), new MockRestaurantRepository(), new MockTableRepository())
         await repo.create({
             id: 'order-1',
             restaurantId: 'rest-1',
@@ -115,7 +116,7 @@ describe('OrderService autorización y scoping', () => {
 describe('OrderService.updateItemStatus: transiciones de estado', () => {
     const setup = async (status: 'pendiente' | 'preparando' | 'listo' | 'entregado') => {
         const repo = new MockOrderRepository()
-        const service = new OrderService(repo, new MockDishRepository(), new MockRestaurantRepository())
+        const service = new OrderService(repo, new MockDishRepository(), new MockRestaurantRepository(), new MockTableRepository())
         const order: Order = {
             id: 'o1', restaurantId: 'r1', tableId: null, clientId: null, createdAt: new Date(),
             items: [{ id: 'i1', dishId: 'd1', quantity: 1, notes: null, status }]
