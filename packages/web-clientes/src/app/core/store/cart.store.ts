@@ -1,4 +1,5 @@
 import { Injectable, signal, computed } from '@angular/core'
+import { Table } from '../models/table.model'
 
 export interface Dish {
   id: string
@@ -21,9 +22,11 @@ export interface CartItem {
 export class CartStore {
   private readonly _items = signal<CartItem[]>([])
   private readonly _restaurantId = signal<string | null>(null)
+  private readonly _table = signal<Table | null>(null)
 
   readonly items = this._items.asReadonly()
   readonly restaurantId = this._restaurantId.asReadonly()
+  readonly table = this._table.asReadonly()
 
   readonly total = computed(() =>
     this._items().reduce((sum, item) => sum + item.dish.price * item.quantity, 0)
@@ -36,6 +39,9 @@ export class CartStore {
   addItem(dish: Dish, quantity: number = 1, notes: string = ''): void {
     if (this._restaurantId() && this._restaurantId() !== dish.restaurantId) {
       this._items.set([])
+    }
+    if (this._table() && this._table()!.restaurantId !== dish.restaurantId) {
+      this._table.set(null)
     }
     this._restaurantId.set(dish.restaurantId)
 
@@ -53,6 +59,14 @@ export class CartStore {
     } else {
       this._items.update(items => [...items, { dish, quantity, notes }])
     }
+  }
+
+  setTable(table: Table | null): void {
+    if (table && this._restaurantId() && this._restaurantId() !== table.restaurantId) {
+      this._items.set([])
+      this._restaurantId.set(null)
+    }
+    this._table.set(table)
   }
 
   removeItem(dishId: string): void {
@@ -74,6 +88,7 @@ export class CartStore {
     this._items.set(items)
   }
 
+  // La mesa se conserva: sigue ocupada tras confirmar un pedido y el cliente puede pedir de nuevo
   clear(): void {
     this._items.set([])
     this._restaurantId.set(null)
