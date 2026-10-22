@@ -1,0 +1,82 @@
+# Comprobaciones obligatorias antes de fusionar en development o main:
+# tests, build de las tres apps Angular y revisión de seguridad con Claude Code
+# en modo headless (`claude -p`) sobre los cambios de la PR.
+name: CI
+
+on:
+  pull_request:
+    branches: [development, main]
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '24'
+
+jobs:
+  test:
+    name: Tests (api y web-shared)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - run: npm test
+
+  build:
+    name: Build ${{ matrix.app }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [web-admin, web-empleados, web-clientes]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - run: npm run build -w @resttek/${{ matrix.app }}
+
+  security-review:
+    name: Revisión de seguridad (Claude)
+    needs: [test, build]
+    # Las PR desde forks no reciben secretos, y en borrador no merece la pena gastar API.
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      !github.event.pull_request.draft
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          # Sin token en .git/config: Claude puede leer ficheros del workspace.
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Instalar Claude Code
+        run: npm install -g @anthropic-ai/claude-code@2.1.308
+      - name: Analizar los cambios
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          CLAUDE_MODEL: ${{ vars.CLAUDE_SECURITY_MODEL || 'claude-opus-5-5' }}
+          CLAUDE_MAX_BUDGET_USD: ${{ vars.CLAUDE_SECURITY_MAX_BUDGET_USD || '5' }}
+        run: bash .github/scripts/security-review.sh

@@ -7,3 +7,6 @@ dist/
 .env.*
 .claude/settings.local.json
 .claude/worktrees/
+
+# Ficheros temporales de la revisión de seguridad de CI
+.security-review/
