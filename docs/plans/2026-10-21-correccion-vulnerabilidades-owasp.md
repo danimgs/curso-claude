@@ -158,7 +158,7 @@ Las validaciones de la Fase 2 y 4 se implementan con funciones propias en los se
 - [x] **T34** (~10 min) — Instalar `pino` y registrar login ok/ko, respuestas 401/403 y altas de empleados · `packages/api/package.json`, `src/app.ts`, `middlewares.ts`, `LoginUseCase.ts`
 - [x] **T35** (~10 min) — Implementar la máquina de estados de ítems (`pendiente → preparando → listo → entregado`) rechazando transiciones inválidas, con tests · `services/order.service.ts`
 - [x] **T36** (~5 min) — Bloquear el seed si `NODE_ENV=production` y añadir `*.db` a `.gitignore` · `src/scripts/seed.ts`, `.gitignore`
-- [ ] **T37** (~5 min) — Envolver `JSON.parse` de `auth_user` en `try/catch` y tipar el usuario · `packages/web-shared/src/lib/auth/auth.store.ts`
+- [x] **T37** (~5 min) — Envolver `JSON.parse` de `auth_user` en `try/catch` y tipar el usuario · `packages/web-shared/src/lib/auth/auth.store.ts`
 - [ ] **T38** (~10 min) — Comprobar `exp` del JWT en el store y en `authGuard`, limpiando la sesión si caducó · `auth.store.ts`, `auth.guard.ts`
 - [ ] **T39** (~10 min) — Reescribir `error.interceptor.ts`: limpiar sesión siempre en 401, tratar el 403, y proteger con `isRedirecting` solo la navegación · `packages/web-shared/src/lib/http/error.interceptor.ts`
 - [ ] **T40** (~5 min) — Enviar el Bearer solo a URLs que empiecen por el prefijo de la API · `packages/web-shared/src/lib/http/auth.interceptor.ts`
