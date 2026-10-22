@@ -53,7 +53,7 @@ describe('Verificación de la API de mesas (sección 6 del plan)', () => {
             'INSERT INTO dishes (id, name, description, price, category, available, restaurant_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
             ['d1', 'Pizza', null, 9, 'principal', 1, 'rest-1', now, now]
         )
-        await new Promise<void>(resolve => { server = app.listen(0, resolve) })
+        await new Promise<void>(resolve => { server = app.listen(0, () => resolve()) })
         baseUrl = `http://127.0.0.1:${(server.address() as AddressInfo).port}`
     })
 
