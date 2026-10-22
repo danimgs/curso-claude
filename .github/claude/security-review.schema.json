@@ -1,0 +1,28 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["summary", "findings"],
+  "properties": {
+    "summary": {
+      "type": "string",
+      "description": "Resumen de la revisión en una o dos frases."
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["severity", "category", "file", "title", "description", "recommendation"],
+        "properties": {
+          "severity": { "type": "string", "enum": ["critica", "alta", "media", "baja"] },
+          "category": { "type": "string" },
+          "file": { "type": "string" },
+          "line": { "type": "integer", "minimum": 1 },
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "recommendation": { "type": "string" }
+        }
+      }
+    }
+  }
+}
