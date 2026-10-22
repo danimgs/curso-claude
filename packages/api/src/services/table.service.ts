@@ -8,7 +8,9 @@ import {
     InvalidTableDescriptionError,
     DuplicatedTableNumberError,
     TableNotFoundError,
-    TableOccupiedError
+    TableOccupiedError,
+    TableNotAvailableError,
+    InvalidPartySizeError
 } from '@errors/DomainErrors.js'
 
 // Los campos llegan tal cual del cuerpo JSON: el servicio valida su tipo
@@ -89,6 +91,39 @@ export class TableService {
 
     async findByRestaurantId(restaurantId: string): Promise<Table[]> {
         return this.tableRepository.findByRestaurantId(restaurantId)
+    }
+
+    async updateStatus(id: string, restaurantId: string, status: unknown): Promise<Table> {
+        const existing = await this.findById(id, restaurantId)
+        const updated: Table = {
+            ...existing,
+            status: normalizeTableStatus(status),
+            updatedAt: new Date().toISOString()
+        }
+        await this.tableRepository.save(updated)
+        return updated
+    }
+
+    // partySize llega normalmente como texto de la query string
+    async findAvailable(restaurantId: string, partySize: unknown): Promise<Table[]> {
+        return this.tableRepository.findAvailable(restaurantId, this.parsePartySize(partySize))
+    }
+
+    async occupy(id: string, restaurantId: string): Promise<Table> {
+        const occupied = await this.tableRepository.occupyIfFree(id, restaurantId, new Date().toISOString())
+        const table = await this.findById(id, restaurantId)
+        if (!occupied) {
+            throw new TableNotAvailableError()
+        }
+        return table
+    }
+
+    private parsePartySize(value: unknown): number {
+        const parsed = typeof value === 'string' && /^\d+$/.test(value) ? Number(value) : value
+        if (!Number.isInteger(parsed) || (parsed as number) < 1 || (parsed as number) > MAX_CAPACITY) {
+            throw new InvalidPartySizeError()
+        }
+        return parsed as number
     }
 
     private async assertNumberIsFree(table: Table): Promise<void> {
