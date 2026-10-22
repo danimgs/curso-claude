@@ -3,7 +3,7 @@
 - **Issue**: #5 — https://github.com/danimgs/curso-claude/issues/5
 - **Tipo**: funcionalidad
 - **Fecha**: 2026-10-22
-- **Estado**: completado (API)
+- **Estado**: completado (pendiente la prueba visual de T32)
 
 ## 1. Contexto
 
@@ -183,27 +183,27 @@ Respuesta (`toJSON`): `{ id, restaurantId, number, description, capacity, status
 
 **web-admin**
 
-- [ ] **T15** (~5 min) — Crear el modelo `Table`/`TableStatus` y `TableService` (CRUD contra `/restaurants/:restaurantId/tables`) · `packages/web-admin/src/app/features/tables/models/table.model.ts`, `services/table.service.ts`
-- [ ] **T16** (~10 min) — Crear `TableStore` (signals, `load`, `create`, `update`, `remove` con `.update()`) · `packages/web-admin/src/app/features/tables/store/table.store.ts`
-- [ ] **T17** (~10 min) — Crear `TableListComponent` (tabla con número, descripción, capacidad, estado, editar y eliminar con confirmación) · `packages/web-admin/src/app/features/tables/pages/table-list/table-list.component.ts`
-- [ ] **T18** (~10 min) — Crear `TableFormComponent` (alta/edición con validación: número ≥ 1, capacidad 1-20, descripción ≤ 200, estado) · `packages/web-admin/src/app/features/tables/pages/table-form/table-form.component.ts`
-- [ ] **T19** (~5 min) — Crear `tables.routes.ts`, registrar `restaurants/:restaurantId/tables` y añadir el enlace "Mesas" en el dashboard del restaurante · `packages/web-admin/src/app/features/tables/tables.routes.ts`, `app.routes.ts`, `features/restaurants/pages/restaurant-dashboard/restaurant-dashboard.component.ts`
+- [x] **T15** (~5 min) — Crear el modelo `Table`/`TableStatus` y `TableService` (CRUD contra `/restaurants/:restaurantId/tables`) · `packages/web-admin/src/app/features/tables/models/table.model.ts`, `services/table.service.ts`
+- [x] **T16** (~10 min) — Crear `TableStore` (signals, `load`, `create`, `update`, `remove` con `.update()`) · `packages/web-admin/src/app/features/tables/store/table.store.ts`
+- [x] **T17** (~10 min) — Crear `TableListComponent` (tabla con número, descripción, capacidad, estado, editar y eliminar con confirmación) · `packages/web-admin/src/app/features/tables/pages/table-list/table-list.component.ts`
+- [x] **T18** (~10 min) — Crear `TableFormComponent` (alta/edición con validación: número ≥ 1, capacidad 1-20, descripción ≤ 200, estado) · `packages/web-admin/src/app/features/tables/pages/table-form/table-form.component.ts`
+- [x] **T19** (~5 min) — Crear `tables.routes.ts`, registrar `restaurants/:restaurantId/tables` y añadir el enlace "Mesas" en el dashboard del restaurante · `packages/web-admin/src/app/features/tables/tables.routes.ts`, `app.routes.ts`, `features/restaurants/pages/restaurant-dashboard/restaurant-dashboard.component.ts`
 
 **web-empleados**
 
-- [ ] **T20** (~10 min) — Crear modelo, `TableService` (`getTables`, `updateStatus`) y `TableStore` con polling 30 s · `packages/web-empleados/src/app/features/tables/{models,services,store}/`
-- [ ] **T21** (~10 min) — Crear `MesasComponent`: tarjetas por mesa con estado y `<select>` para cambiarlo · `packages/web-empleados/src/app/features/tables/pages/mesas/mesas.component.ts`
-- [ ] **T22** (~10 min) — Mostrar en las mesas ocupadas los pedidos activos de `OrderStore` con `tableId === mesa.id` y el estado de cada ítem (iniciar/parar polling de ambos stores) · `mesas.component.ts`
-- [ ] **T23** (~5 min) — Añadir la ruta `mesas` (`roleGuard` camarero/manager) y el enlace en el menú del shell · `packages/web-empleados/src/app/app.routes.ts`, `core/layout/shell.component.ts`
+- [x] **T20** (~10 min) — Crear modelo, `TableService` (`getTables`, `updateStatus`) y `TableStore` con polling 30 s · `packages/web-empleados/src/app/features/tables/{models,services,store}/`
+- [x] **T21** (~10 min) — Crear `MesasComponent`: tarjetas por mesa con estado y `<select>` para cambiarlo · `packages/web-empleados/src/app/features/tables/pages/mesas/mesas.component.ts`
+- [x] **T22** (~10 min) — Mostrar en las mesas ocupadas los pedidos activos de `OrderStore` con `tableId === mesa.id` y el estado de cada ítem (iniciar/parar polling de ambos stores) · `mesas.component.ts`
+- [x] **T23** (~5 min) — Añadir la ruta `mesas` (`roleGuard` camarero/manager) y el enlace en el menú del shell · `packages/web-empleados/src/app/app.routes.ts`, `core/layout/shell.component.ts`
 
 **web-clientes**
 
-- [ ] **T24** (~5 min) — Crear el modelo `Table` y `TableService` (`getAvailable(restaurantId, partySize)`, `occupy(restaurantId, tableId)`) · `packages/web-clientes/src/app/core/models/table.model.ts`, `core/services/table.service.ts`
-- [ ] **T25** (~5 min) — Añadir `_table`, `table`, `setTable()` a `CartStore`; borrar la mesa al cambiar de restaurante y conservarla en `clear()` · `packages/web-clientes/src/app/core/store/cart.store.ts`
-- [ ] **T26** (~10 min) — Crear `TableSelectionComponent` (personas, buscar, seleccionar, "Continuar" → `occupy`, manejo de 409 y lista vacía "No hay mesas libres para N personas") · `packages/web-clientes/src/app/features/tables/table-selection.component.ts`
-- [ ] **T27** (~5 min) — Registrar la ruta `restaurants/:id/table` y enlazarla desde `restaurant-list` · `packages/web-clientes/src/app/app.routes.ts`, `features/restaurants/restaurant-list.component.ts`
-- [ ] **T28** (~5 min) — En `restaurant-menu`, redirigir a la selección si no hay mesa de ese restaurante y mostrar "Mesa N" · `packages/web-clientes/src/app/features/menu/restaurant-menu.component.ts`
-- [ ] **T29** (~10 min) — Enviar `tableId` en `OrderService.createOrder` y desde `cart.component.ts`; mostrar la mesa en el resumen; ante un 409 `TableNotOccupiedError`, borrar la mesa del `CartStore` (conservando los ítems), mostrar "Tu mesa ha sido liberada, elige otra" y navegar a `/restaurants/:id/table` · `packages/web-clientes/src/app/core/services/order.service.ts`, `features/cart/cart.component.ts`
+- [x] **T24** (~5 min) — Crear el modelo `Table` y `TableService` (`getAvailable(restaurantId, partySize)`, `occupy(restaurantId, tableId)`) · `packages/web-clientes/src/app/core/models/table.model.ts`, `core/services/table.service.ts`
+- [x] **T25** (~5 min) — Añadir `_table`, `table`, `setTable()` a `CartStore`; borrar la mesa al cambiar de restaurante y conservarla en `clear()` · `packages/web-clientes/src/app/core/store/cart.store.ts`
+- [x] **T26** (~10 min) — Crear `TableSelectionComponent` (personas, buscar, seleccionar, "Continuar" → `occupy`, manejo de 409 y lista vacía "No hay mesas libres para N personas") · `packages/web-clientes/src/app/features/tables/table-selection.component.ts`
+- [x] **T27** (~5 min) — Registrar la ruta `restaurants/:id/table` y enlazarla desde `restaurant-list` · `packages/web-clientes/src/app/app.routes.ts`, `features/restaurants/restaurant-list.component.ts`
+- [x] **T28** (~5 min) — En `restaurant-menu`, redirigir a la selección si no hay mesa de ese restaurante y mostrar "Mesa N" · `packages/web-clientes/src/app/features/menu/restaurant-menu.component.ts`
+- [x] **T29** (~10 min) — Enviar `tableId` en `OrderService.createOrder` y desde `cart.component.ts`; mostrar la mesa en el resumen; ante un 409 `TableNotOccupiedError`, borrar la mesa del `CartStore` (conservando los ítems), mostrar "Tu mesa ha sido liberada, elige otra" y navegar a `/restaurants/:id/table` · `packages/web-clientes/src/app/core/services/order.service.ts`, `features/cart/cart.component.ts`
 
 **Documentación y verificación**
 
