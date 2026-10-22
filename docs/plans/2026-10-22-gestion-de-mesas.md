@@ -3,7 +3,7 @@
 - **Issue**: #5 — https://github.com/danimgs/curso-claude/issues/5
 - **Tipo**: funcionalidad
 - **Fecha**: 2026-10-22
-- **Estado**: pendiente
+- **Estado**: completado (API)
 
 ## 1. Contexto
 
