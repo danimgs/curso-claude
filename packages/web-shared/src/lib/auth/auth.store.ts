@@ -1,4 +1,5 @@
 import { Injectable, signal, computed } from '@angular/core'
+import { isTokenExpired } from './jwt.util'
 
 export interface AuthUser {
   id: string
@@ -29,7 +30,7 @@ function readStoredSession(): { token: string | null; user: AuthUser | null } {
 
   try {
     const user: unknown = JSON.parse(rawUser ?? 'null')
-    if (token !== null && isAuthUser(user)) return { token, user }
+    if (token !== null && isAuthUser(user) && !isTokenExpired(token)) return { token, user }
   } catch {
     // JSON corrupto: se trata igual que una sesión inválida
   }
@@ -49,6 +50,20 @@ export class AuthStore {
   readonly user = this._user.asReadonly()
   readonly isAuthenticated = computed(() => this._token() !== null)
   readonly userRole = computed(() => this._user()?.role ?? null)
+
+  /**
+   * Comprueba en este momento que hay sesión y que el token no ha caducado; si caducó, la limpia.
+   * El computed `isAuthenticated` no se reevalúa con el paso del tiempo, por eso el guard usa este método.
+   */
+  hasValidSession(): boolean {
+    const token = this._token()
+    if (token === null) return false
+    if (isTokenExpired(token)) {
+      this.clearSession()
+      return false
+    }
+    return true
+  }
 
   setSession(token: string, user: AuthUser): void {
     localStorage.setItem(TOKEN_KEY, token)
