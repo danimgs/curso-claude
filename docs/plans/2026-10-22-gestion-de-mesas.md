@@ -198,7 +198,7 @@ Respuesta (`toJSON`): `{ id, restaurantId, number, description, capacity, status
 
 **web-clientes**
 
-- [ ] **T24** (~5 min) — Crear el modelo `Table` y `TableService` (`getAvailable(restaurantId, partySize)`, `occupy(restaurantId, tableId)`) · `packages/web-clientes/src/app/core/models/table.model.ts`, `core/services/table.service.ts`
+- [x] **T24** (~5 min) — Crear el modelo `Table` y `TableService` (`getAvailable(restaurantId, partySize)`, `occupy(restaurantId, tableId)`) · `packages/web-clientes/src/app/core/models/table.model.ts`, `core/services/table.service.ts`
 - [ ] **T25** (~5 min) — Añadir `_table`, `table`, `setTable()` a `CartStore`; borrar la mesa al cambiar de restaurante y conservarla en `clear()` · `packages/web-clientes/src/app/core/store/cart.store.ts`
 - [ ] **T26** (~10 min) — Crear `TableSelectionComponent` (personas, buscar, seleccionar, "Continuar" → `occupy`, manejo de 409 y lista vacía "No hay mesas libres para N personas") · `packages/web-clientes/src/app/features/tables/table-selection.component.ts`
 - [ ] **T27** (~5 min) — Registrar la ruta `restaurants/:id/table` y enlazarla desde `restaurant-list` · `packages/web-clientes/src/app/app.routes.ts`, `features/restaurants/restaurant-list.component.ts`
