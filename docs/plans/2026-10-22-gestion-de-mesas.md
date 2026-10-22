@@ -203,7 +203,7 @@ Respuesta (`toJSON`): `{ id, restaurantId, number, description, capacity, status
 - [x] **T26** (~10 min) — Crear `TableSelectionComponent` (personas, buscar, seleccionar, "Continuar" → `occupy`, manejo de 409 y lista vacía "No hay mesas libres para N personas") · `packages/web-clientes/src/app/features/tables/table-selection.component.ts`
 - [x] **T27** (~5 min) — Registrar la ruta `restaurants/:id/table` y enlazarla desde `restaurant-list` · `packages/web-clientes/src/app/app.routes.ts`, `features/restaurants/restaurant-list.component.ts`
 - [x] **T28** (~5 min) — En `restaurant-menu`, redirigir a la selección si no hay mesa de ese restaurante y mostrar "Mesa N" · `packages/web-clientes/src/app/features/menu/restaurant-menu.component.ts`
-- [ ] **T29** (~10 min) — Enviar `tableId` en `OrderService.createOrder` y desde `cart.component.ts`; mostrar la mesa en el resumen; ante un 409 `TableNotOccupiedError`, borrar la mesa del `CartStore` (conservando los ítems), mostrar "Tu mesa ha sido liberada, elige otra" y navegar a `/restaurants/:id/table` · `packages/web-clientes/src/app/core/services/order.service.ts`, `features/cart/cart.component.ts`
+- [x] **T29** (~10 min) — Enviar `tableId` en `OrderService.createOrder` y desde `cart.component.ts`; mostrar la mesa en el resumen; ante un 409 `TableNotOccupiedError`, borrar la mesa del `CartStore` (conservando los ítems), mostrar "Tu mesa ha sido liberada, elige otra" y navegar a `/restaurants/:id/table` · `packages/web-clientes/src/app/core/services/order.service.ts`, `features/cart/cart.component.ts`
 
 **Documentación y verificación**
 

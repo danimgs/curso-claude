@@ -33,6 +33,10 @@ const MAX_PARTY_SIZE = 20
         </button>
       </div>
 
+      @if (notice()) {
+        <div class="notice">{{ notice() }}</div>
+      }
+
       @if (error()) {
         <div class="alert-error">{{ error() }}</div>
       }
@@ -83,6 +87,13 @@ const MAX_PARTY_SIZE = 20
       margin-bottom: 0;
       flex: 1;
     }
+    .notice {
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      border-radius: var(--radius-sm);
+      background: var(--green-glow);
+      color: var(--green-light);
+    }
     .table-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -132,6 +143,10 @@ export class TableSelectionComponent {
   readonly searching = signal(false)
   readonly occupying = signal(false)
   readonly error = signal<string | null>(null)
+  // Aviso enviado por quien navega aquí (p. ej. el carrito cuando la mesa ha sido liberada)
+  readonly notice = signal<string | null>(
+    (this.router.getCurrentNavigation()?.extras.state?.['message'] as string | undefined) ?? null
+  )
 
   private get restaurantId(): string {
     return this.route.snapshot.paramMap.get('id')!
