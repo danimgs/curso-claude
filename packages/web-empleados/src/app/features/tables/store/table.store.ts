@@ -1,4 +1,4 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { AuthStore, httpErrorMessage } from '@resttek/web-shared';
 import { Table, TableStatus } from '../models/table.model';
@@ -18,15 +18,6 @@ export class TableStore {
   readonly tables = this._tables.asReadonly();
   readonly loading = this._loading.asReadonly();
   readonly error = this._error.asReadonly();
-
-  private readonly numberById = computed(
-    () => new Map(this._tables().map(table => [table.id, table.number] as const))
-  );
-
-  /** Número visible de la mesa, o null si aún no se conoce (no cargada o sin permiso para listarlas). */
-  tableNumber(tableId: string): number | null {
-    return this.numberById().get(tableId) ?? null;
-  }
 
   async loadTables(): Promise<void> {
     const restaurantId = this.authStore.user()?.restaurantId;
