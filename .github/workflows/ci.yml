@@ -75,7 +75,7 @@ jobs:
         run: npm install -g @anthropic-ai/claude-code@2.1.308
       - name: Analizar los cambios
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           BASE_REF: ${{ github.event.pull_request.base.ref }}
           CLAUDE_MODEL: ${{ vars.CLAUDE_SECURITY_MODEL || 'claude-opus-5-5' }}
           CLAUDE_MAX_BUDGET_USD: ${{ vars.CLAUDE_SECURITY_MAX_BUDGET_USD || '5' }}
