@@ -1,9 +1,10 @@
 import { inject } from '@angular/core'
 import type { HttpInterceptorFn } from '@angular/common/http'
 import { catchError, throwError } from 'rxjs'
-import { Router, NavigationExtras } from '@angular/router'
+import { Router } from '@angular/router'
 import { AuthStore } from '../auth/auth.store'
 
+// Evita lanzar varias navegaciones a /login cuando fallan a la vez varias peticiones con 401
 let isRedirecting = false
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
@@ -12,20 +13,17 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req).pipe(
     catchError(error => {
-      if (error.status === 401 && !isRedirecting) {
-        const currentUrl = router.url
-        if (currentUrl.includes('/login')) {
-          auth.clearSession()
-          return throwError(() => error)
-        }
-        
-        isRedirecting = true
+      // 401: la sesión ya no vale. Se limpia siempre; solo la navegación se protege de duplicados.
+      // 403: la sesión es válida pero no tiene permiso, así que no se cierra y el error llega a la UI.
+      if (error.status === 401) {
         auth.clearSession()
-        
-        const navigationExtras: NavigationExtras = { replaceUrl: true }
-        router.navigate(['/login'], navigationExtras).finally(() => {
-          setTimeout(() => { isRedirecting = false }, 1000)
-        })
+
+        if (!isRedirecting && !router.url.includes('/login')) {
+          isRedirecting = true
+          router.navigate(['/login'], { replaceUrl: true }).finally(() => {
+            setTimeout(() => { isRedirecting = false }, 1000)
+          })
+        }
       }
       return throwError(() => error)
     })
