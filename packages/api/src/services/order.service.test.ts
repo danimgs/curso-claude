@@ -4,7 +4,7 @@ import { MockOrderRepository } from '@repositories/mocks/MockOrderRepository.js'
 import { MockDishRepository } from '@repositories/mocks/MockDishRepository.js'
 import { MockRestaurantRepository } from '@repositories/mocks/MockRestaurantRepository.js'
 import type { Order } from '@models/order.model.js'
-import { OrderNotFoundError, InvalidOrderStatusError } from '@errors/DomainErrors.js'
+import { OrderNotFoundError, InvalidOrderStatusError, InvalidStatusTransitionError } from '@errors/DomainErrors.js'
 
 describe('OrderService.updateItemStatus', () => {
     let repo: MockOrderRepository
@@ -109,5 +109,47 @@ describe('OrderService autorización y scoping', () => {
             const order = await service.getById('order-1', { id: 'adm', role: 'admin', restaurantId: null })
             expect(order.id).toBe('order-1')
         })
+    })
+})
+
+describe('OrderService.updateItemStatus: transiciones de estado', () => {
+    const setup = async (status: 'pendiente' | 'preparando' | 'listo' | 'entregado') => {
+        const repo = new MockOrderRepository()
+        const service = new OrderService(repo, new MockDishRepository(), new MockRestaurantRepository())
+        const order: Order = {
+            id: 'o1', restaurantId: 'r1', tableId: null, clientId: null, createdAt: new Date(),
+            items: [{ id: 'i1', dishId: 'd1', quantity: 1, notes: null, status }]
+        }
+        await repo.create(order)
+        return { service, item: order.items[0]! }
+    }
+
+    it.each([
+        ['pendiente', 'preparando'],
+        ['preparando', 'listo'],
+        ['listo', 'entregado'],
+        ['pendiente', 'listo']
+    ] as const)('permite avanzar de %s a %s', async (from, to) => {
+        const { service, item } = await setup(from)
+        await service.updateItemStatus('o1', 'i1', to)
+        expect(item.status).toBe(to)
+    })
+
+    it.each([
+        ['entregado', 'pendiente'],
+        ['entregado', 'listo'],
+        ['listo', 'preparando'],
+        ['listo', 'pendiente'],
+        ['preparando', 'pendiente']
+    ] as const)('rechaza retroceder de %s a %s', async (from, to) => {
+        const { service, item } = await setup(from)
+        await expect(service.updateItemStatus('o1', 'i1', to)).rejects.toThrow(InvalidStatusTransitionError)
+        expect(item.status).toBe(from)
+    })
+
+    it('repetir el mismo estado no falla ni cambia nada', async () => {
+        const { service, item } = await setup('preparando')
+        await expect(service.updateItemStatus('o1', 'i1', 'preparando')).resolves.toBeUndefined()
+        expect(item.status).toBe('preparando')
     })
 })

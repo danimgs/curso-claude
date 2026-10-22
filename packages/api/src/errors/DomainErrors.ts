@@ -204,3 +204,9 @@ export class InvalidLogoUrlError extends AppError {
     super('Logo URL must be a valid https URL')
   }
 }
+
+export class InvalidStatusTransitionError extends AppError {
+  constructor(from: string, to: string) {
+    super(`Invalid status transition from ${from} to ${to}`)
+  }
+}

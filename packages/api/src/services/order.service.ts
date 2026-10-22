@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto'
 import type { Order, OrderItem } from '@models/order.model.js'
-import { normalizeOrderStatus } from '@models/order.model.js'
+import { normalizeOrderStatus, assertValidStatusTransition } from '@models/order.model.js'
 import type { OrderRepository } from '@repositories/order.repository.js'
 import type { DishRepository } from '@repositories/dish.repository.js'
 import type { RestaurantRepository } from '@repositories/restaurant.repository.js'
@@ -142,6 +142,7 @@ export class OrderService {
         }
 
         const normalizedStatus = normalizeOrderStatus(status)
+        assertValidStatusTransition(item.status, normalizedStatus)
         item.status = normalizedStatus
 
         await this.orderRepository.updateItemStatus(orderId, itemId, normalizedStatus)
