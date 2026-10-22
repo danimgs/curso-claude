@@ -3,7 +3,7 @@ import type { Response } from 'express'
 import { authorizeRestaurant, type AuthRequest, type AuthUser } from './middlewares.js'
 
 function run(user: AuthUser | undefined, restaurantId: string) {
-    const req = { user, params: { restaurantId } } as unknown as AuthRequest
+    const req = { user, params: { restaurantId }, originalUrl: '/api/v1/restaurants/x/dishes' } as unknown as AuthRequest
     const json = vi.fn()
     const res = { status: vi.fn().mockReturnValue({ json }) } as unknown as Response
     const next = vi.fn()

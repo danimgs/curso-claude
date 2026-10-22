@@ -3,9 +3,11 @@ import { dbConfig } from '@config/database.js'
 import { BcryptAuthService } from '@employee/infrastructure/BcryptAuthService.js'
 import { SqliteEmployeeRepository } from '@employee/infrastructure/SqliteEmployeeRepository.js'
 import { Employee } from '@employee/domain/Employee.js'
+import { assertSeedAllowed } from './seedGuard.js'
 
 const seed = async () => {
     try {
+        assertSeedAllowed()
         await dbConfig.initialize()
         console.log('Database initialized.')
 

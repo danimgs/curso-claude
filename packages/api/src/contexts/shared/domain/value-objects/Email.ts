@@ -4,10 +4,11 @@ export class Email {
     private readonly value: string
 
     constructor(value: string) {
-        if (!this.isValid(value)) {
+        const normalized = typeof value === 'string' ? value.trim().toLowerCase() : value
+        if (!this.isValid(normalized)) {
             throw new InvalidEmailError()
         }
-        this.value = value
+        this.value = normalized
     }
 
     private isValid(email: string): boolean {

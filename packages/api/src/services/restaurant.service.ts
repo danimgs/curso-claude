@@ -8,7 +8,8 @@ import {
     OwnerFirstNameRequiredError,
     OwnerLastNameRequiredError,
     InvalidPhoneError,
-    RestaurantNotFoundError
+    RestaurantNotFoundError,
+    InvalidLogoUrlError
 } from '@errors/DomainErrors.js'
 
 export interface CreateRestaurantDTO {
@@ -32,6 +33,23 @@ export interface UpdateRestaurantDTO {
 }
 
 const PHONE_REGEX = /^\+?[\d\s\-()]{7,20}$/
+
+const MAX_LOGO_URL_LENGTH = 2048
+
+// Solo se admiten URLs https: rechaza javascript:, data:, http: y rutas relativas
+function normalizeLogoUrl(value: unknown): string | null {
+    if (value === null || value === undefined) return null
+    if (typeof value !== 'string') throw new InvalidLogoUrlError()
+    const trimmed = value.trim()
+    if (trimmed === '') return null
+    if (trimmed.length > MAX_LOGO_URL_LENGTH) throw new InvalidLogoUrlError()
+    try {
+        if (new URL(trimmed).protocol !== 'https:') throw new InvalidLogoUrlError()
+    } catch {
+        throw new InvalidLogoUrlError()
+    }
+    return trimmed
+}
 
 export class RestaurantService {
     constructor(private readonly restaurantRepository: RestaurantRepository) {}
@@ -128,7 +146,7 @@ export class RestaurantService {
             phone: props.phone,
             ownerFirstName: props.ownerFirstName,
             ownerLastName: props.ownerLastName,
-            logoUrl: props.logoUrl,
+            logoUrl: normalizeLogoUrl(props.logoUrl),
             createdAt: props.createdAt,
             updatedAt: props.updatedAt
         }

@@ -1,8 +1,9 @@
-import { MockEmployeeRepository, MockAuthService } from '@employee/application/mocks/MockDependencies.js'
+import { MockEmployeeRepository, MockAuthService, MockRestaurantLookup } from '@employee/application/mocks/MockDependencies.js'
 import { CreateEmployeeUseCase } from '@employee/application/CreateEmployeeUseCase.js'
 import { LoginUseCase } from '@employee/application/LoginUseCase.js'
 import { Employee } from '@employee/domain/Employee.js'
 import { describe, it, expect, beforeEach } from 'vitest'
+import { WeakPasswordError, RestaurantNotFoundError } from '@errors/DomainErrors.js'
 
 describe('Employee Application Use Cases', () => {
     let employeeRepo: MockEmployeeRepository
@@ -13,7 +14,7 @@ describe('Employee Application Use Cases', () => {
     beforeEach(() => {
         employeeRepo = new MockEmployeeRepository()
         authService = new MockAuthService()
-        createEmployeeUseCase = new CreateEmployeeUseCase(employeeRepo, authService)
+        createEmployeeUseCase = new CreateEmployeeUseCase(employeeRepo, authService, new MockRestaurantLookup(['r1']))
         loginUseCase = new LoginUseCase(employeeRepo, authService)
     })
 
@@ -45,7 +46,7 @@ describe('Employee Application Use Cases', () => {
                 firstName: 'Alice',
                 lastName: 'Smith',
                 email: 'alice@resttek.com',
-                passwordPlain: 'pass',
+                passwordPlain: 'passwordSegura1',
                 role: 'manager',
                 restaurantId: 'r1'
             })
@@ -54,14 +55,92 @@ describe('Employee Application Use Cases', () => {
                 firstName: 'Bob',
                 lastName: 'Jones',
                 email: 'alice@resttek.com',
-                passwordPlain: 'pass2',
+                passwordPlain: 'passwordSegura2',
                 role: 'camarero',
                 restaurantId: 'r1'
             })).rejects.toThrow('Email is already in use')
         })
     })
 
+    describe('CreateEmployeeUseCase: contraseña y email', () => {
+        const base = { firstName: 'Alice', lastName: 'Smith', role: 'manager', restaurantId: 'r1' }
+
+        it('should reject a weak password', async () => {
+            await expect(createEmployeeUseCase.execute({
+                ...base, email: 'alice@resttek.com', passwordPlain: 'corta'
+            })).rejects.toThrow(WeakPasswordError)
+        })
+
+        it('should reject a password equal to the email', async () => {
+            await expect(createEmployeeUseCase.execute({
+                ...base, email: 'alice@resttek.com', passwordPlain: 'alice@resttek.com'
+            })).rejects.toThrow(WeakPasswordError)
+        })
+
+        it('should treat emails that differ only in case as duplicated', async () => {
+            await createEmployeeUseCase.execute({ ...base, email: 'alice@resttek.com', passwordPlain: 'passwordSegura1' })
+
+            await expect(createEmployeeUseCase.execute({
+                ...base, email: 'Alice@Resttek.com', passwordPlain: 'passwordSegura2'
+            })).rejects.toThrow('Email is already in use')
+        })
+    })
+
+    describe('CreateEmployeeUseCase: restaurante', () => {
+        const base = { firstName: 'Alice', lastName: 'Smith', email: 'alice@resttek.com', passwordPlain: 'passwordSegura1', role: 'manager' }
+
+        it('should reject a restaurant that does not exist', async () => {
+            await expect(createEmployeeUseCase.execute({ ...base, restaurantId: 'no-existe' }))
+                .rejects.toThrow(RestaurantNotFoundError)
+            expect(await employeeRepo.findByEmail('alice@resttek.com')).toBeNull()
+        })
+
+        it('should accept an existing restaurant', async () => {
+            const employee = await createEmployeeUseCase.execute({ ...base, restaurantId: 'r1' })
+            expect(employee.restaurantId).toBe('r1')
+        })
+
+        it('should accept no restaurant (null)', async () => {
+            const employee = await createEmployeeUseCase.execute({ ...base, role: 'admin', restaurantId: null })
+            expect(employee.restaurantId).toBeNull()
+        })
+    })
+
+    describe('LoginUseCase: tiempos', () => {
+        it('should still compare a password when the email does not exist', async () => {
+            const calls: string[] = []
+            const spyAuth = new MockAuthService()
+            const original = spyAuth.comparePasswords.bind(spyAuth)
+            spyAuth.comparePasswords = async (provided, stored) => {
+                calls.push(stored)
+                return original(provided, stored)
+            }
+            const useCase = new LoginUseCase(employeeRepo, spyAuth)
+
+            await expect(useCase.execute({ email: 'nobody@resttek.com', passwordRaw: 'password123' }))
+                .rejects.toThrow('Invalid credentials')
+
+            expect(calls).toHaveLength(1)
+            expect(calls[0]).toMatch(/^\$2[aby]\$10\$/)
+        })
+    })
+
     describe('LoginUseCase', () => {
+        it('should log in ignoring email case and surrounding spaces', async () => {
+            await employeeRepo.save(Employee.create({
+                id: '9',
+                firstName: 'Admin',
+                lastName: 'User',
+                email: 'admin@resttek.com',
+                passwordHash: 'hashed_password123',
+                role: 'admin',
+                restaurantId: null
+            }))
+
+            const result = await loginUseCase.execute({ email: ' Admin@Resttek.COM ', passwordRaw: 'password123' })
+            expect(result.employee.id).toBe('9')
+        })
+
         it('should return token for valid credentials', async () => {
             const employee = Employee.create({
                 id: '123',

@@ -10,7 +10,7 @@
     "dev:admin": "npm run start -w @resttek/web-admin",
     "dev:empleados": "npm run start -w @resttek/web-empleados",
     "dev:clientes": "npm run start -w @resttek/web-clientes",
-    "test": "npm run test -w @resttek/api",
+    "test": "npm run test -w @resttek/api -w @resttek/web-shared",
     "seed": "npm run seed -w @resttek/api"
   }
 }

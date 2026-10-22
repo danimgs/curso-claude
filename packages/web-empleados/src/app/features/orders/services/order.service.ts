@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Order, UpdateOrderItemStatusDto } from '../models/order.model';
 import { environment } from '../../../../environments/environment';
@@ -9,9 +9,9 @@ export class OrderService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = `${environment.apiUrl}/orders`;
 
-  getActiveOrders(restaurantId: string): Observable<Order[]> {
-    const params = new HttpParams().set('restaurantId', restaurantId);
-    return this.http.get<Order[]>(`${this.baseUrl}/active`, { params });
+  // El restaurante lo deduce la API del token: el cliente no envía restaurantId.
+  getActiveOrders(): Observable<Order[]> {
+    return this.http.get<Order[]>(`${this.baseUrl}/active`);
   }
 
   updateItemStatus(orderId: string, itemId: string, dto: UpdateOrderItemStatusDto): Observable<void> {

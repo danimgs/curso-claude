@@ -3,6 +3,8 @@ import { Employee } from '@employee/domain/Employee.js'
 import type { IEmployeeRepository } from '@employee/domain/IEmployeeRepository.js'
 import type { IAuthService } from '@employee/domain/IAuthService.js'
 import { DuplicatedEmailError } from '@errors/DomainErrors.js'
+import { Email } from '@shared/domain/value-objects/Email.js'
+import { Password } from '@shared/domain/value-objects/Password.js'
 
 export interface RegisterClientDTO {
     firstName: string
@@ -30,7 +32,10 @@ export class RegisterClientUseCase {
     ) {}
 
     async execute(dto: RegisterClientDTO): Promise<RegisterClientResponse> {
-        const existingEmployee = await this.employeeRepo.findByEmail(dto.email)
+        const email = new Email(dto.email).getValue()
+        Password.assertValid(dto.password, email)
+
+        const existingEmployee = await this.employeeRepo.findByEmail(email)
         if (existingEmployee) {
             throw new DuplicatedEmailError()
         }
@@ -41,7 +46,7 @@ export class RegisterClientUseCase {
             id: randomUUID(),
             firstName: dto.firstName,
             lastName: dto.lastName,
-            email: dto.email,
+            email,
             passwordHash,
             role: 'cliente',
             restaurantId: null

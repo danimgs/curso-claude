@@ -17,7 +17,7 @@ npm run dev:api            # API en :3000 (tsx watch); /health para comprobar
 npm run dev:admin          # :4200
 npm run dev:empleados      # :4201
 npm run dev:clientes       # :4202
-npm test                   # vitest run, solo del paquete api
+npm test                   # vitest run de api y web-shared
 ```
 
 Test individual (desde `packages/api`):
@@ -28,9 +28,10 @@ npx vitest run -t "nombre del test"
 npm run test:watch
 ```
 
-- Los frontends no tienen script de test ni de lint; solo `start`, `build` y `watch` (`ng`). Hacen proxy de `/api` a `localhost:3000`.
+- Los frontends no tienen script de test ni de lint; solo `start`, `build` y `watch` (`ng`). Hacen proxy de `/api` a `localhost:3000`. Los únicos tests de frontend están en `web-shared` (vitest en Node, sin DOM): `npm test -w @resttek/web-shared`.
+- `@angular/build` está fijado a `21.2.6` en las tres apps: desde la 21.2.27 exige que los assets estén dentro del workspace root y las apps cargan `../web-shared/src/lib/assets`. Para subirlo hay que mover esos assets. Instalar con `npm ci`.
 - Tras cambiar `web-shared` hay que reiniciar el servidor de desarrollo del frontend (Angular no detecta cambios en él).
-- Credenciales de seed: la contraseña de cada usuario es su propio email (p. ej. `admin@resttek.com`).
+- Credenciales de seed: la contraseña de cada usuario es su propio email (p. ej. `admin@resttek.com`). El seed se niega a ejecutarse con `NODE_ENV=production`. Esas contraseñas no cumplen la política de registro (mínimo 10 caracteres, distinta del email) porque el seed hashea directamente; sirven solo para desarrollo.
 
 ## Arquitectura de la API (`packages/api`)
 
@@ -44,10 +45,11 @@ Detalles que requieren leer varios ficheros:
 - Alias de importación definidos en `tsconfig.json` (`@employee/*`, `@shared/*`, `@services/*`, `@routes/*`, etc.); Vitest los resuelve con `vite-tsconfig-paths`. Módulos ESM: los imports llevan extensión `.js`.
 - tsconfig muy estricto (`noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `verbatimModuleSyntax`).
 - Errores: `src/errors/AppError.ts` y `DomainErrors.ts`, traducidos a HTTP por `errorHandler`.
-- JWT con `JWT_SECRET` (por defecto `super-secret-resttek-key`, definido por duplicado en `BcryptAuthService.ts` y `middlewares.ts`). La BD se elige por `NODE_ENV` en `config/database.ts`; las tablas se crean al arrancar. El fichero `resttek.db` vive en `packages/api`.
+- Seguridad (detalle en `docs/arquitectura/seguridad.md`): `JWT_SECRET` se lee solo en `config/env.ts`; en producción es obligatorio y la API no arranca sin él ni con el valor de desarrollo. El JWT es HS256 con `issuer`/`audience` y dura 1 h (`JWT_EXPIRES_IN_SECONDS`). `authenticate` revalida el empleado en la BD en cada petición y toma de ahí el rol y el `restaurantId`. `authorizeRestaurant` limita las rutas con `:restaurantId` al admin o al personal de ese restaurante; un recurso de otro restaurante se trata como inexistente (404). CORS usa la lista `CORS_ORIGINS` (separada por comas; por defecto los puertos 4200-4202 en desarrollo y ninguno en producción). Los logs son JSON con pino (`LOG_LEVEL`).
+- La BD se elige por `NODE_ENV` en `config/database.ts`; las tablas se crean al arrancar. El fichero `resttek.db` vive en `packages/api`.
 - Los clientes **son `Employee`** con `role = 'cliente'` y `restaurant_id = null` (no hay tabla de clientes; login y registro usan el mismo modelo).
 - Al crear un pedido, **cada unidad es un `OrderItem`** con `quantity: 1`, para que cocina marque el estado por unidad.
-- El filtrado por rol en los frontends es solo de navegación; la autorización real está en `authorize()` de la API.
+- El filtrado por rol en los frontends es solo de navegación (`roleGuard`, menús); la autorización real está en `authorize()` y `authorizeRestaurant` de la API. `GET /orders/active` deduce el restaurante del token: el cliente no envía `restaurantId`.
 
 ## Arquitectura del frontend
 
