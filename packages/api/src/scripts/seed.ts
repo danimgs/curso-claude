@@ -4,6 +4,7 @@ import { BcryptAuthService } from '@employee/infrastructure/BcryptAuthService.js
 import { SqliteEmployeeRepository } from '@employee/infrastructure/SqliteEmployeeRepository.js'
 import { Employee } from '@employee/domain/Employee.js'
 import { assertSeedAllowed } from './seedGuard.js'
+import { seedTables } from './seedTables.js'
 
 const seed = async () => {
     try {
@@ -160,11 +161,14 @@ const seed = async () => {
 
         console.log('Restaurant 2 dishes created: 1 dish + 1 drink')
 
+        const table5Id = await seedTables(dbConfig)
+        console.log('Tables created: 6 in rest-1 (table 5 occupied) + 4 in rest-2')
+
         const order1Id = randomUUID()
         await dbConfig.run(`
             INSERT OR IGNORE INTO orders (id, restaurant_id, table_id, client_id, created_at)
             VALUES (?, ?, ?, ?, ?)
-        `, [order1Id, 'rest-1', '5', null, new Date().toISOString()])
+        `, [order1Id, 'rest-1', table5Id, null, new Date().toISOString()])
 
         for (let i = 0; i < 2; i++) {
             await dbConfig.run(`
