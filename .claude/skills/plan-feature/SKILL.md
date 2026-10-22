@@ -2,7 +2,7 @@
 name: plan-feature
 description: Planifica una issue de GitHub (leída con gh a partir de su número) y publica el plan detallado, con una lista de tareas de 5-10 minutos, como comentario en esa issue. Úsala cuando el usuario pida planificar, diseñar o preparar una funcionalidad o la corrección de un bug indicando el número de la issue.
 argument-hint: <número de la issue>
-allowed-tools: Bash(gh issue view:*), Bash(gh issue comment:*), Bash(gh auth status:*), Bash(gh repo view:*)
+allowed-tools: mcp__slack__slack_post_message, Bash(gh issue view:*), Bash(gh issue comment:*), Bash(gh auth status:*), Bash(gh repo view:*)
 ---
 
 # Planificar una funcionalidad o un bug

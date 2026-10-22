@@ -2,7 +2,7 @@
 name: implement-plan
 description: Implementa el plan publicado (con plan-feature) como comentario en una issue de GitHub, creando una rama desde development en un git worktree propio (uno por agente/app si se reparte entre varios agentes) y aplicando TDD estricto tarea a tarea, con un commit por tarea. Al terminar deja la PR lista para revisión y avisa por Slack. Úsala cuando el usuario pida implementar, desarrollar o ejecutar el plan de una issue. Requiere el número de la issue.
 argument-hint: <número de la issue>
-allowed-tools: Bash(gh issue view:*), Bash(gh auth status:*), Bash(gh pr create:*), Bash(gh pr view:*), Bash(gh pr list:*), Bash(gh pr ready:*), Bash(gh repo view:*), Bash(git push:*), Bash(git remote:*), Bash(git status:*), Bash(git branch:*), Bash(git checkout:*), Bash(git switch:*), Bash(git worktree:*), Bash(git rev-parse:*), Bash(git add:*), Bash(git commit:*), Bash(git log:*), Bash(git diff:*), Bash(npx vitest:*), Bash(npm test:*), Bash(npm install:*), Bash(npm i:*)
+allowed-tools: mcp__slack__slack_post_message, Bash(gh issue view:*), Bash(gh auth status:*), Bash(gh pr create:*), Bash(gh pr view:*), Bash(gh pr list:*), Bash(gh pr ready:*), Bash(gh repo view:*), Bash(git push:*), Bash(git remote:*), Bash(git status:*), Bash(git branch:*), Bash(git checkout:*), Bash(git switch:*), Bash(git worktree:*), Bash(git rev-parse:*), Bash(git add:*), Bash(git commit:*), Bash(git log:*), Bash(git diff:*), Bash(npx vitest:*), Bash(npm test:*), Bash(npm install:*), Bash(npm i:*)
 ---
 
 # Implementar un plan con TDD estricto
