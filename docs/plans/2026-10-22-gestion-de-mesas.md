@@ -184,7 +184,7 @@ Respuesta (`toJSON`): `{ id, restaurantId, number, description, capacity, status
 **web-admin**
 
 - [x] **T15** (~5 min) — Crear el modelo `Table`/`TableStatus` y `TableService` (CRUD contra `/restaurants/:restaurantId/tables`) · `packages/web-admin/src/app/features/tables/models/table.model.ts`, `services/table.service.ts`
-- [ ] **T16** (~10 min) — Crear `TableStore` (signals, `load`, `create`, `update`, `remove` con `.update()`) · `packages/web-admin/src/app/features/tables/store/table.store.ts`
+- [x] **T16** (~10 min) — Crear `TableStore` (signals, `load`, `create`, `update`, `remove` con `.update()`) · `packages/web-admin/src/app/features/tables/store/table.store.ts`
 - [ ] **T17** (~10 min) — Crear `TableListComponent` (tabla con número, descripción, capacidad, estado, editar y eliminar con confirmación) · `packages/web-admin/src/app/features/tables/pages/table-list/table-list.component.ts`
 - [ ] **T18** (~10 min) — Crear `TableFormComponent` (alta/edición con validación: número ≥ 1, capacidad 1-20, descripción ≤ 200, estado) · `packages/web-admin/src/app/features/tables/pages/table-form/table-form.component.ts`
 - [ ] **T19** (~5 min) — Crear `tables.routes.ts`, registrar `restaurants/:restaurantId/tables` y añadir el enlace "Mesas" en el dashboard del restaurante · `packages/web-admin/src/app/features/tables/tables.routes.ts`, `app.routes.ts`, `features/restaurants/pages/restaurant-dashboard/restaurant-dashboard.component.ts`
