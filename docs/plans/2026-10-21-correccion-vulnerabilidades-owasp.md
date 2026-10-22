@@ -2,7 +2,7 @@
 
 - **Tipo**: bug
 - **Fecha**: 2026-10-21
-- **Estado**: en curso
+- **Estado**: completado
 
 ## 1. Contexto
 
@@ -169,20 +169,20 @@ Las validaciones de la Fase 2 y 4 se implementan con funciones propias en los se
 ## 6. Verificación
 
 - [x] `NODE_ENV=production` sin `JWT_SECRET`: la API no arranca y muestra un error claro.
-- [ ] Token firmado con `super-secret-resttek-key` y rol `admin`: `GET /api/v1/employees` devuelve 401.
+- [x] Token firmado con `super-secret-resttek-key` y rol `admin`: `GET /api/v1/employees` devuelve 401. *(Comprobado con un token sin `issuer`/`audience`; en producción esa clave ni arranca.)*
 - [x] `manager` del restaurante A: `PUT /api/v1/restaurants/<B>/dishes/<id>` devuelve 403, y `DELETE` de un plato de B bajo la URL de A devuelve 404.
 - [x] `cliente`: `GET /api/v1/orders/active` devuelve 403, y `GET /api/v1/orders/<pedido ajeno>` devuelve 403 o 404.
 - [x] `camarero` del restaurante A: `PATCH` del estado de un ítem del restaurante B devuelve 403 o 404.
-- [ ] 11 `POST /api/v1/auth/login` seguidos desde una IP: el último devuelve 429.
-- [ ] `POST /auth/register` con contraseña `1` devuelve 400, y con `Admin@resttek.com` ya existente como `admin@resttek.com` devuelve 400 de email duplicado.
-- [ ] `POST /orders` con `quantity: 1000000`, con un plato de otro restaurante o con `items: "x"` devuelve 400.
-- [ ] `GET /api/v1/employees?limit=99999999` devuelve como máximo 100 empleados.
-- [ ] `GET /api/v1/public/restaurants` no incluye `email`, `phone` ni datos del propietario.
-- [ ] Las respuestas incluyen las cabeceras de `helmet` y no incluyen `X-Powered-By`.
-- [ ] Un navegador desde un origen no permitido recibe un error CORS.
-- [ ] `npm test` pasa y `npm audit` no muestra críticas en dependencias de producción.
-- [ ] Frontend: un `camarero` que escribe `/cocina` es redirigido, un token caducado en `localStorage` lleva a `/login` y un `auth_user` corrupto no deja la app en blanco.
-- [ ] Frontend: un fallo 500 muestra un mensaje genérico, sin URL de la API.
+- [x] 11 `POST /api/v1/auth/login` seguidos desde una IP: el último devuelve 429. *(Test HTTP.)*
+- [x] `POST /auth/register` con contraseña `1` devuelve 400, y con `Admin@resttek.com` ya existente como `admin@resttek.com` devuelve 400 de email duplicado. *(Tests de los casos de uso.)*
+- [x] `POST /orders` con `quantity: 1000000`, con `items: "x"` devuelve 400; con un plato inexistente o de otro restaurante devuelve 404 (se trata como no existente). *(Test HTTP y de servicio.)*
+- [x] `GET /api/v1/employees?limit=99999999` devuelve como máximo 100 empleados. *(Test HTTP con 121 empleados.)*
+- [x] `GET /api/v1/public/restaurants` no incluye `email`, `phone` ni datos del propietario. *(Test HTTP; conserva `phone`.)*
+- [x] Las respuestas incluyen las cabeceras de `helmet` y no incluyen `X-Powered-By`. *(Test HTTP.)*
+- [x] Un navegador desde un origen no permitido recibe un error CORS. *(Comprobado en la cabecera `Access-Control-Allow-Origin`, no en un navegador.)*
+- [ ] `npm test` pasa y `npm audit` no muestra críticas en dependencias de producción. *(`npm test` pasa; `npm audit --omit=dev` aún muestra 1 crítica, `tar` vía `sqlite3`, que solo se explota en la instalación y exige `sqlite3@6`.)*
+- [x] Frontend: un `camarero` que escribe `/cocina` es redirigido, un token caducado en `localStorage` lleva a `/login` y un `auth_user` corrupto no deja la app en blanco. *(Tests unitarios de `web-shared`; no se ha probado en un navegador.)*
+- [x] Frontend: un fallo 500 muestra un mensaje genérico, sin URL de la API. *(Test unitario de `httpErrorMessage`; no se ha probado en un navegador.)*
 
 ## 7. Riesgos y dudas abiertas
 
