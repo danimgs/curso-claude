@@ -42,17 +42,19 @@ export class SqliteOrderRepository implements OrderRepository {
     constructor(private readonly db: Database) {}
 
     async create(order: Order): Promise<void> {
-        await this.db.run(
-            'INSERT INTO orders (id, restaurant_id, table_id, client_id, created_at) VALUES (?, ?, ?, ?, ?)',
-            [order.id, order.restaurantId, order.tableId, order.clientId, order.createdAt.toISOString()]
-        )
-
-        for (const item of order.items) {
-            await this.db.run(
-                'INSERT INTO order_items (id, order_id, dish_id, quantity, notes, status) VALUES (?, ?, ?, ?, ?, ?)',
-                [item.id, order.id, item.dishId, item.quantity, item.notes, item.status]
+        await this.db.transaction(async tx => {
+            await tx.run(
+                'INSERT INTO orders (id, restaurant_id, table_id, client_id, created_at) VALUES (?, ?, ?, ?, ?)',
+                [order.id, order.restaurantId, order.tableId, order.clientId, order.createdAt.toISOString()]
             )
-        }
+
+            for (const item of order.items) {
+                await tx.run(
+                    'INSERT INTO order_items (id, order_id, dish_id, quantity, notes, status) VALUES (?, ?, ?, ?, ?, ?)',
+                    [item.id, order.id, item.dishId, item.quantity, item.notes, item.status]
+                )
+            }
+        })
     }
 
     async findById(id: string): Promise<Order | null> {

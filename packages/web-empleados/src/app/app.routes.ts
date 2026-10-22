@@ -1,7 +1,9 @@
 import { Routes } from '@angular/router';
 import { LoginComponent } from '@resttek/web-shared';
 import { ShellComponent } from './core/layout/shell.component';
-import { authGuard } from '@resttek/web-shared';
+import { authGuard, roleGuard } from '@resttek/web-shared';
+
+const HOME_BY_ROLE = { cocinero: '/cocina', manager: '/cocina', camarero: '/barra' };
 
 export const routes: Routes = [
   {
@@ -20,14 +22,20 @@ export const routes: Routes = [
       },
       {
         path: 'cocina',
+        canActivate: [roleGuard],
+        data: { roles: ['cocinero', 'manager'], homeByRole: HOME_BY_ROLE },
         loadComponent: () => import('./features/orders/pages/cocina/cocina.component').then(m => m.CocinaComponent),
       },
       {
         path: 'barra',
+        canActivate: [roleGuard],
+        data: { roles: ['camarero', 'manager'], homeByRole: HOME_BY_ROLE },
         loadComponent: () => import('./features/orders/pages/barra/barra.component').then(m => m.BarraComponent),
       },
       {
         path: 'salon',
+        canActivate: [roleGuard],
+        data: { roles: ['camarero', 'manager'], homeByRole: HOME_BY_ROLE },
         loadComponent: () => import('./features/orders/pages/salon/salon.component').then(m => m.SalonComponent),
       }
     ]

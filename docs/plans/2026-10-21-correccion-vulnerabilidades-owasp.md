@@ -2,7 +2,7 @@
 
 - **Tipo**: bug
 - **Fecha**: 2026-10-21
-- **Estado**: pendiente
+- **Estado**: completado
 
 ## 1. Contexto
 
@@ -107,6 +107,8 @@ Las validaciones de la Fase 2 y 4 se implementan con funciones propias en los se
 
 ### Fase 1: críticos
 
+> T1 a T11 se implementaron y verificaron antes de adoptar el flujo TDD con un commit por tarea (80 tests y 21 comprobaciones HTTP en verde). Van en el commit inicial del repositorio. El flujo TDD estricto empieza en T12.
+
 - [x] **T1** (~10 min) — Crear el módulo de configuración con `JWT_SECRET`, que aborta en producción si falta o es el valor antiguo · `packages/api/src/config/env.ts`
 - [x] **T2** (~5 min) — Sustituir la constante duplicada por el import de `env.ts` en `middlewares.ts` y `BcryptAuthService.ts`, y cargar `dotenv/config` al inicio de `server.ts` · `packages/api/src/contexts/shared/infrastructure/http/middlewares.ts`, `packages/api/src/contexts/employee/infrastructure/BcryptAuthService.ts`, `packages/api/src/server.ts`
 - [x] **T3** (~5 min) — Tipar `req.user` (`id`, `role`, `restaurantId`) en `AuthRequest`, sustituyendo `any` · `middlewares.ts`
@@ -121,62 +123,66 @@ Las validaciones de la Fase 2 y 4 se implementan con funciones propias en los se
 
 ### Fase 2: autenticación y validación
 
-- [ ] **T12** (~5 min) — Instalar `express-rate-limit` y aplicarlo a `/api/v1/auth` (login y registro con límites distintos) · `packages/api/package.json`, `src/app.ts`
-- [ ] **T13** (~10 min) — Crear `WeakPasswordError` (400) en `DomainErrors.ts` y su traducción en `errorHandler` · `src/errors/DomainErrors.ts`, `errorHandler.ts`
-- [ ] **T14** (~10 min) — Validar la contraseña (mín. 10 caracteres, distinta del email) y normalizar el email en `Email` con `trim().toLowerCase()`, con tests · `contexts/shared/domain/Email.ts`, `contexts/employee/application/RegisterClientUseCase.ts`, `CreateEmployeeUseCase.ts`
-- [ ] **T15** (~10 min) — Validar `items` (array de 1 a 50), `quantity` (entero de 1 a 20) y `notes` (máx. 200 caracteres) en la creación de pedidos, con tests · `services/order.service.ts`
-- [ ] **T16** (~10 min) — Validar que el restaurante existe y que cada `dishId` pertenece al restaurante y está disponible al crear el pedido · `services/order.service.ts`, `repositories/dish.repository.ts`
-- [ ] **T17** (~10 min) — Insertar el pedido y sus ítems en una transacción SQLite en el repositorio de pedidos · `repositories/order.repository.ts`
-- [ ] **T18** (~5 min) — Reemplazar el `catch` con `error.message` por `next(error)` en `createOrder` y `updateItemStatus` · `controllers/order.controller.ts`
+- [x] **T12** (~5 min) — Instalar `express-rate-limit` y aplicarlo a `/api/v1/auth` (login y registro con límites distintos) · `packages/api/package.json`, `src/app.ts`
+- [x] **T13** (~10 min) — Crear `WeakPasswordError` (400) en `DomainErrors.ts` y su traducción en `errorHandler` · `src/errors/DomainErrors.ts`, `errorHandler.ts`
+- [x] **T14** (~10 min) — Validar la contraseña (mín. 10 caracteres, distinta del email) y normalizar el email en `Email` con `trim().toLowerCase()`, con tests · `contexts/shared/domain/Email.ts`, `contexts/employee/application/RegisterClientUseCase.ts`, `CreateEmployeeUseCase.ts`
+- [x] **T15** (~10 min) — Validar `items` (array de 1 a 50), `quantity` (entero de 1 a 20) y `notes` (máx. 200 caracteres) en la creación de pedidos, con tests · `services/order.service.ts`
+- [x] **T16** (~10 min) — Validar que el restaurante existe y que cada `dishId` pertenece al restaurante y está disponible al crear el pedido · `services/order.service.ts`, `repositories/dish.repository.ts`
+- [x] **T17** (~10 min) — Insertar el pedido y sus ítems en una transacción SQLite en el repositorio de pedidos · `repositories/order.repository.ts`
+- [x] **T18** (~5 min) — Reemplazar el `catch` con `error.message` por `next(error)` en `createOrder` y `updateItemStatus` · `controllers/order.controller.ts`
 
 ### Fase 3: configuración, dependencias y frontend
 
-- [ ] **T19** (~5 min) — Instalar `helmet` y aplicarlo, desactivar `x-powered-by` y fijar el límite de `express.json` en 100 kb · `packages/api/package.json`, `src/app.ts`
-- [ ] **T20** (~10 min) — Configurar CORS con lista blanca desde `CORS_ORIGINS` (por defecto los puertos 4200-4202 en desarrollo) · `src/config/env.ts`, `src/app.ts`
-- [ ] **T21** (~10 min) — Firmar el JWT con `issuer`, `audience` y `expiresIn` configurable (por defecto 1 h), y verificarlo con `algorithms: ['HS256']`, `issuer` y `audience` · `BcryptAuthService.ts`, `middlewares.ts`
-- [ ] **T22** (~10 min) — Revalidar en `authenticate` que el empleado existe y usar su rol y `restaurantId` actuales, con test de empleado eliminado · `middlewares.ts`
-- [ ] **T23** (~10 min) — Ejecutar `npm audit fix`, actualizar `@angular/*` y `vite` dentro de 21.x, y confirmar que compilan los tres frontends y pasan los tests de la API · `package.json`, `package-lock.json`
-- [ ] **T24** (~10 min) — Crear `roleGuard` funcional que lea `route.data['roles']` y redirija si no coincide · `packages/web-shared/src/lib/auth/role.guard.ts`, `packages/web-shared/src/index.ts`
-- [ ] **T25** (~5 min) — Aplicar `roleGuard` con los roles permitidos a `/cocina`, `/barra` y `/salon` · `packages/web-empleados/src/app/app.routes.ts`
-- [ ] **T26** (~10 min) — Dejar de enviar `restaurantId` desde el cliente en las consultas de pedidos activos, ya que la API lo deriva del token · `web-empleados/src/app/features/orders/services/order.service.ts`, páginas `cocina`, `barra` y `salon`
+> Ajuste en T23: `npm audit fix` falla con un error interno de npm, y `npm update` global sube `@angular/build` a 21.2.27, que rompe el build de los frontends ("asset path must be within the workspace root", por los assets de `../web-shared`). Se aplicó `npm update --workspace=@resttek/api` y se dejó Angular en 21.2.7 / `@angular/build` 21.2.6. Quedan 14 avisos (de 44) que requieren saltos mayores: `sqlite3@6`, `vitest@5` y herramientas de Angular. Ver riesgos.
+
+- [x] **T19** (~5 min) — Instalar `helmet` y aplicarlo, desactivar `x-powered-by` y fijar el límite de `express.json` en 100 kb · `packages/api/package.json`, `src/app.ts`
+- [x] **T20** (~10 min) — Configurar CORS con lista blanca desde `CORS_ORIGINS` (por defecto los puertos 4200-4202 en desarrollo) · `src/config/env.ts`, `src/app.ts`
+- [x] **T21** (~10 min) — Firmar el JWT con `issuer`, `audience` y `expiresIn` configurable (por defecto 1 h), y verificarlo con `algorithms: ['HS256']`, `issuer` y `audience` · `BcryptAuthService.ts`, `middlewares.ts`
+- [x] **T22** (~10 min) — Revalidar en `authenticate` que el empleado existe y usar su rol y `restaurantId` actuales, con test de empleado eliminado · `middlewares.ts`
+- [x] **T23** (~10 min) — Ejecutar `npm audit fix`, actualizar `@angular/*` y `vite` dentro de 21.x, y confirmar que compilan los tres frontends y pasan los tests de la API · `package.json`, `package-lock.json`
+- [x] **T24** (~10 min) — Crear `roleGuard` funcional que lea `route.data['roles']` y redirija si no coincide · `packages/web-shared/src/lib/auth/role.guard.ts`, `packages/web-shared/src/index.ts`
+- [x] **T25** (~5 min) — Aplicar `roleGuard` con los roles permitidos a `/cocina`, `/barra` y `/salon` · `packages/web-empleados/src/app/app.routes.ts`
+- [x] **T26** (~10 min) — Dejar de enviar `restaurantId` desde el cliente en las consultas de pedidos activos, ya que la API lo deriva del token · `web-empleados/src/app/features/orders/services/order.service.ts`, páginas `cocina`, `barra` y `salon`
 
 ### Fase 4: resto
 
-- [ ] **T27** (~5 min) — Acotar `limit` de `listEmployees` a un máximo de 100 · `EmployeeController.ts`, `SqliteEmployeeRepository.ts`
-- [ ] **T28** (~10 min) — Validar que el restaurante existe en `POST /employees` y en el alta de empleados de un restaurante · `CreateEmployeeUseCase.ts`
-- [ ] **T29** (~5 min) — Ejecutar siempre una comparación bcrypt contra un hash ficticio cuando el email no existe en login · `LoginUseCase.ts`
-- [ ] **T30** (~10 min) — Devolver un DTO público (`id`, `name`, `address`, `logoUrl`) en `/public/restaurants`, sin email, teléfono ni propietario · `controllers/restaurant.controller.ts`
-- [ ] **T31** (~10 min) — Añadir `OrderNotFoundError` a los 404 del `errorHandler`, tratar `SyntaxError` de JSON como 400 y registrar los 500 · `errorHandler.ts`
-- [ ] **T32** (~10 min) — Validar `price` y `currentStock` con `Number.isFinite`, longitud de `name` y que los ingredientes sean un array del mismo restaurante · `services/dish.service.ts`, `services/ingredient.service.ts`
-- [ ] **T33** (~5 min) — Validar `logoUrl` con `new URL()` aceptando solo `https:` · `services/restaurant.service.ts`
-- [ ] **T34** (~10 min) — Instalar `pino` y registrar login ok/ko, respuestas 401/403 y altas de empleados · `packages/api/package.json`, `src/app.ts`, `middlewares.ts`, `LoginUseCase.ts`
-- [ ] **T35** (~10 min) — Implementar la máquina de estados de ítems (`pendiente → preparando → listo → entregado`) rechazando transiciones inválidas, con tests · `services/order.service.ts`
-- [ ] **T36** (~5 min) — Bloquear el seed si `NODE_ENV=production` y añadir `*.db` a `.gitignore` · `src/scripts/seed.ts`, `.gitignore`
-- [ ] **T37** (~5 min) — Envolver `JSON.parse` de `auth_user` en `try/catch` y tipar el usuario · `packages/web-shared/src/lib/auth/auth.store.ts`
-- [ ] **T38** (~10 min) — Comprobar `exp` del JWT en el store y en `authGuard`, limpiando la sesión si caducó · `auth.store.ts`, `auth.guard.ts`
-- [ ] **T39** (~10 min) — Reescribir `error.interceptor.ts`: limpiar sesión siempre en 401, tratar el 403, y proteger con `isRedirecting` solo la navegación · `packages/web-shared/src/lib/http/error.interceptor.ts`
-- [ ] **T40** (~5 min) — Enviar el Bearer solo a URLs que empiecen por el prefijo de la API · `packages/web-shared/src/lib/http/auth.interceptor.ts`
-- [ ] **T41** (~10 min) — Mostrar mensajes genéricos según el código HTTP en `OrderStore` en lugar de `err.message` · `web-empleados/src/app/features/orders/store/order.store.ts`
-- [ ] **T42** (~5 min) — Añadir una meta CSP (`default-src 'self'`) a `index.html` · `packages/web-empleados/src/index.html`
-- [ ] **T43** (~10 min) — Actualizar `CLAUDE.md` (secreto JWT obligatorio en producción, `CORS_ORIGINS`, autorización por restaurante, contraseña mínima del seed, `npm ci`) y crear `docs/arquitectura/seguridad.md` · `CLAUDE.md`, `docs/arquitectura/seguridad.md`
+> Ajuste en T30: el DTO público conserva `phone` (además de `id`, `name`, `address` y `logoUrl`) porque `web-clientes` lo muestra en el listado; se retiran `email`, los datos del propietario y las fechas. T30 corrige además una regresión de la Fase 1: `GET /public/restaurants/:id` reutilizaba `getById`, que pasó a exigir admin o restaurante propio, y devolvía 403 sin token. Ahora tiene su propio manejador.
+
+- [x] **T27** (~5 min) — Acotar `limit` de `listEmployees` a un máximo de 100 · `EmployeeController.ts`, `SqliteEmployeeRepository.ts`
+- [x] **T28** (~10 min) — Validar que el restaurante existe en `POST /employees` y en el alta de empleados de un restaurante · `CreateEmployeeUseCase.ts`
+- [x] **T29** (~5 min) — Ejecutar siempre una comparación bcrypt contra un hash ficticio cuando el email no existe en login · `LoginUseCase.ts`
+- [x] **T30** (~10 min) — Devolver un DTO público (`id`, `name`, `address`, `logoUrl`) en `/public/restaurants`, sin email, teléfono ni propietario · `controllers/restaurant.controller.ts`
+- [x] **T31** (~10 min) — Añadir `OrderNotFoundError` a los 404 del `errorHandler`, tratar `SyntaxError` de JSON como 400 y registrar los 500 · `errorHandler.ts`
+- [x] **T32** (~10 min) — Validar `price` y `currentStock` con `Number.isFinite`, longitud de `name` y que los ingredientes sean un array del mismo restaurante · `services/dish.service.ts`, `services/ingredient.service.ts`
+- [x] **T33** (~5 min) — Validar `logoUrl` con `new URL()` aceptando solo `https:` · `services/restaurant.service.ts`
+- [x] **T34** (~10 min) — Instalar `pino` y registrar login ok/ko, respuestas 401/403 y altas de empleados · `packages/api/package.json`, `src/app.ts`, `middlewares.ts`, `LoginUseCase.ts`
+- [x] **T35** (~10 min) — Implementar la máquina de estados de ítems (`pendiente → preparando → listo → entregado`) rechazando transiciones inválidas, con tests · `services/order.service.ts`
+- [x] **T36** (~5 min) — Bloquear el seed si `NODE_ENV=production` y añadir `*.db` a `.gitignore` · `src/scripts/seed.ts`, `.gitignore`
+- [x] **T37** (~5 min) — Envolver `JSON.parse` de `auth_user` en `try/catch` y tipar el usuario · `packages/web-shared/src/lib/auth/auth.store.ts`
+- [x] **T38** (~10 min) — Comprobar `exp` del JWT en el store y en `authGuard`, limpiando la sesión si caducó · `auth.store.ts`, `auth.guard.ts`
+- [x] **T39** (~10 min) — Reescribir `error.interceptor.ts`: limpiar sesión siempre en 401, tratar el 403, y proteger con `isRedirecting` solo la navegación · `packages/web-shared/src/lib/http/error.interceptor.ts`
+- [x] **T40** (~5 min) — Enviar el Bearer solo a URLs que empiecen por el prefijo de la API · `packages/web-shared/src/lib/http/auth.interceptor.ts`
+- [x] **T41** (~10 min) — Mostrar mensajes genéricos según el código HTTP en `OrderStore` en lugar de `err.message` · `web-empleados/src/app/features/orders/store/order.store.ts`
+- [x] **T42** (~5 min) — Añadir una meta CSP (`default-src 'self'`) a `index.html` · `packages/web-empleados/src/index.html`
+- [x] **T43** (~10 min) — Actualizar `CLAUDE.md` (secreto JWT obligatorio en producción, `CORS_ORIGINS`, autorización por restaurante, contraseña mínima del seed, `npm ci`) y crear `docs/arquitectura/seguridad.md` · `CLAUDE.md`, `docs/arquitectura/seguridad.md`
 
 ## 6. Verificación
 
 - [x] `NODE_ENV=production` sin `JWT_SECRET`: la API no arranca y muestra un error claro.
-- [ ] Token firmado con `super-secret-resttek-key` y rol `admin`: `GET /api/v1/employees` devuelve 401.
+- [x] Token firmado con `super-secret-resttek-key` y rol `admin`: `GET /api/v1/employees` devuelve 401. *(Comprobado con un token sin `issuer`/`audience`; en producción esa clave ni arranca.)*
 - [x] `manager` del restaurante A: `PUT /api/v1/restaurants/<B>/dishes/<id>` devuelve 403, y `DELETE` de un plato de B bajo la URL de A devuelve 404.
 - [x] `cliente`: `GET /api/v1/orders/active` devuelve 403, y `GET /api/v1/orders/<pedido ajeno>` devuelve 403 o 404.
 - [x] `camarero` del restaurante A: `PATCH` del estado de un ítem del restaurante B devuelve 403 o 404.
-- [ ] 11 `POST /api/v1/auth/login` seguidos desde una IP: el último devuelve 429.
-- [ ] `POST /auth/register` con contraseña `1` devuelve 400, y con `Admin@resttek.com` ya existente como `admin@resttek.com` devuelve 400 de email duplicado.
-- [ ] `POST /orders` con `quantity: 1000000`, con un plato de otro restaurante o con `items: "x"` devuelve 400.
-- [ ] `GET /api/v1/employees?limit=99999999` devuelve como máximo 100 empleados.
-- [ ] `GET /api/v1/public/restaurants` no incluye `email`, `phone` ni datos del propietario.
-- [ ] Las respuestas incluyen las cabeceras de `helmet` y no incluyen `X-Powered-By`.
-- [ ] Un navegador desde un origen no permitido recibe un error CORS.
-- [ ] `npm test` pasa y `npm audit` no muestra críticas en dependencias de producción.
-- [ ] Frontend: un `camarero` que escribe `/cocina` es redirigido, un token caducado en `localStorage` lleva a `/login` y un `auth_user` corrupto no deja la app en blanco.
-- [ ] Frontend: un fallo 500 muestra un mensaje genérico, sin URL de la API.
+- [x] 11 `POST /api/v1/auth/login` seguidos desde una IP: el último devuelve 429. *(Test HTTP.)*
+- [x] `POST /auth/register` con contraseña `1` devuelve 400, y con `Admin@resttek.com` ya existente como `admin@resttek.com` devuelve 400 de email duplicado. *(Tests de los casos de uso.)*
+- [x] `POST /orders` con `quantity: 1000000`, con `items: "x"` devuelve 400; con un plato inexistente o de otro restaurante devuelve 404 (se trata como no existente). *(Test HTTP y de servicio.)*
+- [x] `GET /api/v1/employees?limit=99999999` devuelve como máximo 100 empleados. *(Test HTTP con 121 empleados.)*
+- [x] `GET /api/v1/public/restaurants` no incluye `email`, `phone` ni datos del propietario. *(Test HTTP; conserva `phone`.)*
+- [x] Las respuestas incluyen las cabeceras de `helmet` y no incluyen `X-Powered-By`. *(Test HTTP.)*
+- [x] Un navegador desde un origen no permitido recibe un error CORS. *(Comprobado en la cabecera `Access-Control-Allow-Origin`, no en un navegador.)*
+- [ ] `npm test` pasa y `npm audit` no muestra críticas en dependencias de producción. *(`npm test` pasa; `npm audit --omit=dev` aún muestra 1 crítica, `tar` vía `sqlite3`, que solo se explota en la instalación y exige `sqlite3@6`.)*
+- [x] Frontend: un `camarero` que escribe `/cocina` es redirigido, un token caducado en `localStorage` lleva a `/login` y un `auth_user` corrupto no deja la app en blanco. *(Tests unitarios de `web-shared`; no se ha probado en un navegador.)*
+- [x] Frontend: un fallo 500 muestra un mensaje genérico, sin URL de la API. *(Test unitario de `httpErrorMessage`; no se ha probado en un navegador.)*
 
 ## 7. Riesgos y dudas abiertas
 
@@ -185,6 +191,6 @@ Las validaciones de la Fase 2 y 4 se implementan con funciones propias en los se
 - **S-08 y H-02**: no se implementa un refresh token revocable ni la cookie `HttpOnly`. Habría que decidirlo aparte, porque afecta a los cuatro frontends.
 - **Compatibilidad del frontend**: T9 y T26 cambian el contrato de `GET /orders/active`. Deben desplegarse juntos, o la API debe seguir aceptando el parámetro para `admin`.
 - **Rotación del secreto**: al fijar `issuer` y `audience` (T21), los tokens emitidos antes quedan invalidados y los usuarios deben volver a iniciar sesión.
-- **Actualización de dependencias**: `npm audit fix` puede introducir cambios incompatibles en Angular o `sqlite3@6`. Se debe compilar y probar tras T23.
+- **Actualización de dependencias**: `@angular/build` ≥ 21.2.27 exige que los assets estén dentro del workspace root y los frontends cargan `../web-shared/src/lib/assets`. Para subir Angular hay que mover o copiar esos assets. `sqlite3@6` (tar/node-gyp, solo en instalación) y `vitest@5` (solo desarrollo) siguen pendientes por ser cambios incompatibles.
 - **docs/api/api-pagination.md** no existe en el repositorio, así que no se pudo consultar para T27.
 - **Dev server**: los avisos de `vite` solo afectan al servidor de desarrollo. No exponerlo fuera de localhost.

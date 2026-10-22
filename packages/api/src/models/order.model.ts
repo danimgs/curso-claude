@@ -1,4 +1,4 @@
-import { InvalidOrderStatusError } from '@errors/DomainErrors.js'
+import { InvalidOrderStatusError, InvalidStatusTransitionError } from '@errors/DomainErrors.js'
 
 const VALID_ORDER_STATUSES = ['pendiente', 'preparando', 'listo', 'entregado'] as const
 
@@ -32,6 +32,14 @@ export function normalizeOrderStatus(value: string): OrderStatusType {
         throw new InvalidOrderStatusError(`Estado inválido: ${value}. Debe ser uno de: ${VALID_ORDER_STATUSES.join(', ')}`)
     }
     return normalized as OrderStatusType
+}
+
+// Los ítems solo avanzan (pendiente -> preparando -> listo -> entregado): se permite saltar
+// pasos (la barra marca listo directamente) pero no retroceder. Repetir el estado es un no-op.
+export function assertValidStatusTransition(from: OrderStatusType, to: OrderStatusType): void {
+    if (VALID_ORDER_STATUSES.indexOf(to) < VALID_ORDER_STATUSES.indexOf(from)) {
+        throw new InvalidStatusTransitionError(from, to)
+    }
 }
 
 export function isOrderFullyDelivered(order: Order): boolean {

@@ -1,8 +1,14 @@
 import { randomUUID } from 'crypto'
 import type { Order, OrderItem } from '@models/order.model.js'
-import { normalizeOrderStatus } from '@models/order.model.js'
+import { normalizeOrderStatus, assertValidStatusTransition } from '@models/order.model.js'
 import type { OrderRepository } from '@repositories/order.repository.js'
-import { RestaurantIdRequiredError, OrderNotFoundError } from '@errors/DomainErrors.js'
+import type { DishRepository } from '@repositories/dish.repository.js'
+import type { RestaurantRepository } from '@repositories/restaurant.repository.js'
+import { RestaurantIdRequiredError, OrderNotFoundError, InvalidOrderError, RestaurantNotFoundError, DishNotFoundError, DishNotAvailableError } from '@errors/DomainErrors.js'
+
+const MAX_ITEMS = 50
+const MAX_QUANTITY = 20
+const MAX_NOTES_LENGTH = 200
 
 export interface CreateOrderRequest {
     restaurantId: string
@@ -22,12 +28,19 @@ export interface OrderActor {
 }
 
 export class OrderService {
-    constructor(private readonly orderRepository: OrderRepository) {}
+    constructor(
+        private readonly orderRepository: OrderRepository,
+        private readonly dishRepository: DishRepository,
+        private readonly restaurantRepository: RestaurantRepository
+    ) {}
 
     async create(request: CreateOrderRequest): Promise<Order> {
         if (!request.restaurantId || request.restaurantId.trim() === '') {
             throw new RestaurantIdRequiredError()
         }
+
+        this.validateItems(request.items)
+        await this.validateRestaurantAndDishes(request.restaurantId, request.items)
 
         const items: OrderItem[] = []
         for (const item of request.items) {
@@ -54,6 +67,43 @@ export class OrderService {
         await this.orderRepository.create(order)
 
         return order
+    }
+
+    private async validateRestaurantAndDishes(restaurantId: string, items: CreateOrderRequest['items']): Promise<void> {
+        const restaurant = await this.restaurantRepository.findById(restaurantId)
+        if (!restaurant) {
+            throw new RestaurantNotFoundError()
+        }
+        for (const dishId of new Set(items.map(i => i.dishId))) {
+            const dish = await this.dishRepository.findById(dishId)
+            // Un plato de otro restaurante se trata como inexistente para no confirmar que existe
+            if (!dish || dish.restaurantId !== restaurantId) {
+                throw new DishNotFoundError()
+            }
+            if (!dish.available) {
+                throw new DishNotAvailableError()
+            }
+        }
+    }
+
+    private validateItems(items: unknown): void {
+        if (!Array.isArray(items) || items.length === 0 || items.length > MAX_ITEMS) {
+            throw new InvalidOrderError(`items debe ser una lista de 1 a ${MAX_ITEMS} elementos`)
+        }
+        for (const item of items) {
+            if (typeof item !== 'object' || item === null) {
+                throw new InvalidOrderError('Cada elemento de items debe ser un objeto')
+            }
+            if (typeof item.dishId !== 'string' || item.dishId.trim() === '') {
+                throw new InvalidOrderError('dishId es obligatorio')
+            }
+            if (!Number.isInteger(item.quantity) || item.quantity < 1 || item.quantity > MAX_QUANTITY) {
+                throw new InvalidOrderError(`quantity debe ser un entero entre 1 y ${MAX_QUANTITY}`)
+            }
+            if (item.notes != null && (typeof item.notes !== 'string' || item.notes.length > MAX_NOTES_LENGTH)) {
+                throw new InvalidOrderError(`notes debe ser texto de como máximo ${MAX_NOTES_LENGTH} caracteres`)
+            }
+        }
     }
 
     async listActive(restaurantId: string): Promise<Order[]> {
@@ -92,6 +142,7 @@ export class OrderService {
         }
 
         const normalizedStatus = normalizeOrderStatus(status)
+        assertValidStatusTransition(item.status, normalizedStatus)
         item.status = normalizedStatus
 
         await this.orderRepository.updateItemStatus(orderId, itemId, normalizedStatus)

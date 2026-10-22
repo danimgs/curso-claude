@@ -1,5 +1,6 @@
 # Plan: <título corto de la funcionalidad o bug>
 
+- **Issue**: <#número — URL de la issue>
 - **Tipo**: <funcionalidad | bug>
 - **Fecha**: <AAAA-MM-DD>
 - **Estado**: pendiente

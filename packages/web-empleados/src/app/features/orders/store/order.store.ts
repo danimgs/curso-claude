@@ -2,6 +2,7 @@ import { Injectable, inject, signal, computed } from '@angular/core';
 import { Order, OrderStatus } from '../models/order.model';
 import { OrderService } from '../services/order.service';
 import { firstValueFrom } from 'rxjs';
+import { httpErrorMessage } from '@resttek/web-shared';
 
 @Injectable({ providedIn: 'root' })
 export class OrderStore {
@@ -17,14 +18,14 @@ export class OrderStore {
   readonly loading = this._loading.asReadonly();
   readonly error = this._error.asReadonly();
 
-  async loadOrders(restaurantId: string): Promise<void> {
+  async loadOrders(): Promise<void> {
     this._loading.set(true);
     this._error.set(null);
     try {
-      const orders = await firstValueFrom(this.orderService.getActiveOrders(restaurantId));
+      const orders = await firstValueFrom(this.orderService.getActiveOrders());
       this._orders.set(orders);
     } catch (err: any) {
-      this._error.set(err.message || 'Error al cargar pedidos');
+      this._error.set(httpErrorMessage(err, 'Error al cargar pedidos'));
     } finally {
       this._loading.set(false);
     }
@@ -47,14 +48,14 @@ export class OrderStore {
         })
       );
     } catch (err: any) {
-      this._error.set(err.message || 'Error al actualizar estado');
+      this._error.set(httpErrorMessage(err, 'Error al actualizar estado'));
     }
   }
 
-  startPolling(restaurantId: string): void {
-    this.loadOrders(restaurantId);
+  startPolling(): void {
+    this.loadOrders();
     this.pollingInterval = setInterval(() => {
-      this.loadOrders(restaurantId);
+      this.loadOrders();
     }, 30000);
   }
 

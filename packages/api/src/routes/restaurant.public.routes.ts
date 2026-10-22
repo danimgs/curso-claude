@@ -11,6 +11,6 @@ const restaurantController = new RestaurantController(restaurantService)
 const router = Router()
 
 router.get('/', restaurantController.getAllPublic)
-router.get('/:id', restaurantController.getById)
+router.get('/:id', restaurantController.getPublicById)
 
 export default router

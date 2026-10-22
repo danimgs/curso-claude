@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { RegisterClientUseCase } from '@employee/application/RegisterClientUseCase.js'
 import type { IEmployeeRepository } from '@employee/domain/IEmployeeRepository.js'
 import type { IAuthService } from '@employee/domain/IAuthService.js'
-import { DuplicatedEmailError } from '@errors/DomainErrors.js'
+import { DuplicatedEmailError, WeakPasswordError } from '@errors/DomainErrors.js'
 
 describe('RegisterClientUseCase', () => {
     let mockEmployeeRepo: Partial<IEmployeeRepository>
@@ -64,5 +64,42 @@ describe('RegisterClientUseCase', () => {
         })).rejects.toThrow(DuplicatedEmailError)
 
         expect(mockEmployeeRepo.save).not.toHaveBeenCalled()
+    })
+
+    it('should throw WeakPasswordError for a password shorter than 10 characters', async () => {
+        vi.mocked(mockEmployeeRepo.findByEmail!).mockResolvedValue(null)
+
+        await expect(useCase.execute({
+            firstName: 'John',
+            lastName: 'Doe',
+            email: 'john@example.com',
+            password: '1'
+        })).rejects.toThrow(WeakPasswordError)
+
+        expect(mockEmployeeRepo.save).not.toHaveBeenCalled()
+    })
+
+    it('should throw WeakPasswordError when the password is missing', async () => {
+        vi.mocked(mockEmployeeRepo.findByEmail!).mockResolvedValue(null)
+
+        await expect(useCase.execute({
+            firstName: 'John',
+            lastName: 'Doe',
+            email: 'john@example.com'
+        } as any)).rejects.toThrow(WeakPasswordError)
+    })
+
+    it('should look up and store the email normalized to lowercase', async () => {
+        vi.mocked(mockEmployeeRepo.findByEmail!).mockResolvedValue(null)
+
+        const result = await useCase.execute({
+            firstName: 'John',
+            lastName: 'Doe',
+            email: '  John@Example.COM ',
+            password: 'password123'
+        })
+
+        expect(mockEmployeeRepo.findByEmail).toHaveBeenCalledWith('john@example.com')
+        expect(result.employee.email).toBe('john@example.com')
     })
 })

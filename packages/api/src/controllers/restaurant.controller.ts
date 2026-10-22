@@ -59,7 +59,16 @@ export class RestaurantController {
     getAllPublic = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
             const restaurants = await this.restaurantService.getAll()
-            res.status(200).json(restaurants.map(r => this.toJSON(r)))
+            res.status(200).json(restaurants.map(r => this.toPublicJSON(r)))
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    getPublicById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        try {
+            const restaurant = await this.restaurantService.getById(req.params.id as string)
+            res.status(200).json(this.toPublicJSON(restaurant))
         } catch (error) {
             next(error)
         }
@@ -79,6 +88,17 @@ export class RestaurantController {
             res.status(200).json(this.toJSON(restaurant))
         } catch (error) {
             next(error)
+        }
+    }
+
+    // Solo datos de negocio pensados para el cliente: sin email ni datos del propietario
+    private toPublicJSON(restaurant: Restaurant) {
+        return {
+            id: restaurant.id,
+            name: restaurant.name,
+            address: restaurant.address,
+            phone: restaurant.phone,
+            logoUrl: restaurant.logoUrl
         }
     }
 
