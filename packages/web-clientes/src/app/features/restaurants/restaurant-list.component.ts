@@ -12,7 +12,7 @@ import { Restaurant } from '../../core/models/restaurant.model'
     <div class="container">
       <div class="page-header">
         <h1>Restaurantes</h1>
-        <p>Selecciona un restaurante para ver su carta</p>
+        <p>Selecciona un restaurante para elegir mesa y ver su carta</p>
       </div>
 
       @if (loading()) {
