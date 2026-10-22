@@ -163,7 +163,7 @@ Las validaciones de la Fase 2 y 4 se implementan con funciones propias en los se
 - [x] **T39** (~10 min) — Reescribir `error.interceptor.ts`: limpiar sesión siempre en 401, tratar el 403, y proteger con `isRedirecting` solo la navegación · `packages/web-shared/src/lib/http/error.interceptor.ts`
 - [x] **T40** (~5 min) — Enviar el Bearer solo a URLs que empiecen por el prefijo de la API · `packages/web-shared/src/lib/http/auth.interceptor.ts`
 - [x] **T41** (~10 min) — Mostrar mensajes genéricos según el código HTTP en `OrderStore` en lugar de `err.message` · `web-empleados/src/app/features/orders/store/order.store.ts`
-- [ ] **T42** (~5 min) — Añadir una meta CSP (`default-src 'self'`) a `index.html` · `packages/web-empleados/src/index.html`
+- [x] **T42** (~5 min) — Añadir una meta CSP (`default-src 'self'`) a `index.html` · `packages/web-empleados/src/index.html`
 - [ ] **T43** (~10 min) — Actualizar `CLAUDE.md` (secreto JWT obligatorio en producción, `CORS_ORIGINS`, autorización por restaurante, contraseña mínima del seed, `npm ci`) y crear `docs/arquitectura/seguridad.md` · `CLAUDE.md`, `docs/arquitectura/seguridad.md`
 
 ## 6. Verificación
