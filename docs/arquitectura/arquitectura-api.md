@@ -345,7 +345,7 @@ Ninguna ruta de pedidos aplica `authorize()`: cualquier usuario autenticado pued
 
 `GET /orders/active` devuelve los pedidos del restaurante que tengan **al menos un ítem** en estado distinto de `entregado`.
 
-`POST /orders` admite `tableId` (texto o `null`). Si no es `null`, la mesa debe existir, ser del restaurante del pedido (404 `TableNotFoundError`) y estar `ocupada` (409 `TableNotOccupiedError`); se comprueba después del restaurante y los platos. `GET /orders/active` devuelve el `tableId` de cada pedido, y `web-empleados` lo cruza con las mesas en el cliente.
+`POST /orders` admite `tableId` (texto o `null`). Si no es `null`, la mesa debe existir, ser del restaurante del pedido (404 `TableNotFoundError`) y estar `ocupada` (409 `TableNotOccupiedError`); se comprueba después del restaurante y los platos. `GET /orders/active` devuelve el `tableId` de cada pedido, que `web-empleados` cruza con las mesas en el cliente, y también `tableNumber` (número de la mesa, o `null` si no hay mesa o ya no existe). Así cocina puede mostrar la mesa, aunque el cocinero no puede listar mesas. Se obtiene con un `LEFT JOIN tables` en la misma consulta de los pedidos, sin consultas extra. Solo este endpoint devuelve `tableNumber`.
 
 Al crear un pedido, el servicio **expande las cantidades**: un ítem con `quantity: 3` se guarda como 3 filas de `order_items` con `quantity: 1` cada una, para poder seguir el estado de cada unidad por separado.
 

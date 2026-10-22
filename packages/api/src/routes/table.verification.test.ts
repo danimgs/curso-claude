@@ -215,6 +215,7 @@ describe('Verificación de la API de mesas (sección 6 del plan)', () => {
             expect(active.status).toBe(200)
             const found = active.body.find((o: { id: string }) => o.id === created.body.id)
             expect(found.tableId).toBe(id)
+            expect(found.tableNumber).toBe(62)
         })
 
         it('tableId que no es texto → 400 InvalidOrderError', async () => {
