@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from 'express'
 import { AppError } from '@errors/AppError.js'
+import { logger } from '@config/logger.js'
 
 const NOT_FOUND_ERRORS = [
     'EmployeeNotFoundError',
@@ -40,6 +41,6 @@ export const errorHandler = (err: any, _req: Request, res: Response, _next: Next
         return
     }
 
-    console.error('Unhandled error:', err)
+    logger.error({ err, event: 'unhandled_error' }, 'Unhandled error')
     res.status(500).json({ error: 'InternalServerError', message: 'Something went wrong' })
 }

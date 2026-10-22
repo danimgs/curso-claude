@@ -2,6 +2,7 @@ import type { Request, Response, NextFunction } from 'express'
 import type { CreateEmployeeUseCase } from '@employee/application/CreateEmployeeUseCase.js'
 import type { IEmployeeRepository } from '@employee/domain/IEmployeeRepository.js'
 import { EmployeeNotFoundError } from '@errors/DomainErrors.js'
+import { logger } from '@config/logger.js'
 
 const DEFAULT_LIMIT = 10
 const MAX_LIMIT = 100
@@ -23,6 +24,10 @@ export class EmployeeController {
                 role,
                 restaurantId: restaurantId ?? null
             })
+            logger.info(
+                { event: 'employee_created', employeeId: employee.id, role: employee.role, restaurantId: employee.restaurantId, createdBy: (req as any).user?.id },
+                'Empleado creado'
+            )
             res.status(201).json({
                 id: employee.id,
                 firstName: employee.firstName,

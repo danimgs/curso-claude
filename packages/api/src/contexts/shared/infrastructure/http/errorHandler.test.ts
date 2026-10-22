@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import type { Request, Response } from 'express'
 import { errorHandler } from './errorHandler.js'
+import { logger } from '@config/logger.js'
 import { WeakPasswordError, OrderNotFoundError } from '@errors/DomainErrors.js'
 
 function run(err: unknown) {
@@ -47,11 +48,11 @@ describe('errorHandler: otros errores', () => {
     })
 
     it('un error inesperado responde 500 genérico y se registra', () => {
-        const spy = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+        const spy = vi.spyOn(logger, 'error')
         const boom = new Error('SQLITE_CONSTRAINT: FOREIGN KEY constraint failed')
         const { res, json } = run(boom)
         expect(res.status).toHaveBeenCalledWith(500)
         expect(json).toHaveBeenCalledWith({ error: 'InternalServerError', message: 'Something went wrong' })
-        expect(spy).toHaveBeenCalledWith('Unhandled error:', boom)
+        expect(spy).toHaveBeenCalledWith({ err: boom, event: 'unhandled_error' }, 'Unhandled error')
     })
 })
