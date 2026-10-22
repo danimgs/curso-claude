@@ -10,6 +10,8 @@ import ingredientRoutes from '@routes/ingredient.routes.js'
 import dishRoutes from '@routes/dish.routes.js'
 import publicRestaurantRoutes from '@routes/restaurant.public.routes.js'
 import publicDishRoutes from '@routes/dish.public.routes.js'
+import tableRoutes from '@routes/table.routes.js'
+import publicTableRoutes from '@routes/table.public.routes.js'
 import orderRoutes from '@routes/order.routes.js'
 import { CORS_ORIGINS } from '@config/env.js'
 import { errorHandler } from '@shared/infrastructure/http/errorHandler.js'
@@ -37,9 +39,11 @@ app.use('/api/v1/auth', authRoutes)
 app.use('/api/v1/employees', employeeRoutes)
 app.use('/api/v1/public/restaurants', publicRestaurantRoutes)
 app.use('/api/v1/public/restaurants/:restaurantId/dishes', publicDishRoutes)
+app.use('/api/v1/public/restaurants/:restaurantId/tables', publicTableRoutes)
 app.use('/api/v1/restaurants', restaurantRoutes)
 app.use('/api/v1/restaurants/:restaurantId/ingredients', ingredientRoutes)
 app.use('/api/v1/restaurants/:restaurantId/dishes', dishRoutes)
+app.use('/api/v1/restaurants/:restaurantId/tables', tableRoutes)
 app.use('/api/v1/restaurants/:restaurantId/employees', restaurantEmployeeRoutes)
 
 app.get('/health', (_req, res) => {
