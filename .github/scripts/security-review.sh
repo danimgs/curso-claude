@@ -3,11 +3,11 @@
 # Falla (exit 1) si hay hallazgos de severidad crítica o alta, o si Claude no
 # devuelve un resultado válido.
 #
-# Variables: ANTHROPIC_API_KEY (obligatoria), BASE_REF (rama destino de la PR),
-# CLAUDE_MODEL, CLAUDE_MAX_BUDGET_USD.
+# Variables: CLAUDE_CODE_OAUTH_TOKEN (obligatoria), BASE_REF (rama destino de la
+# PR), CLAUDE_MODEL, CLAUDE_MAX_BUDGET_USD.
 set -euo pipefail
 
-: "${ANTHROPIC_API_KEY:?Falta el secreto ANTHROPIC_API_KEY}"
+: "${CLAUDE_CODE_OAUTH_TOKEN:?Falta el secreto CLAUDE_CODE_OAUTH_TOKEN}"
 : "${BASE_REF:?Falta BASE_REF (rama destino de la PR)}"
 MODEL="${CLAUDE_MODEL:-claude-opus-5-5}"
 BUDGET="${CLAUDE_MAX_BUDGET_USD:-5}"
