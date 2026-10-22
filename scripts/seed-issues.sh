@@ -117,8 +117,11 @@ ensure_label() {
     return
   fi
 
-  if ! gh label list "${GH_REPO_ARGS[@]}" --search "$label" --json name -q '.[].name' \
-      | grep -Fxq "$label"; then
+  # Se guarda la salida en una variable: con `pipefail`, `grep -q` cerraba la
+  # tubería antes de tiempo y hacía fallar a `gh`, intentando recrear la etiqueta.
+  local existing
+  existing=$(gh label list "${GH_REPO_ARGS[@]}" --search "$label" --json name -q '.[].name' || true)
+  if ! grep -Fxq "$label" <<<"$existing"; then
     echo "Creando etiqueta '$label'..."
     gh label create "$label" --color "$(label_color "$label")" "${GH_REPO_ARGS[@]}" >/dev/null
   fi
