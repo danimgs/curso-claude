@@ -184,3 +184,54 @@ Angular no detecta cambios en librerías externas al workspace automáticamente.
 ### Error de CORS
 
 Asegúrate de acceder al frontend por el proxy (puerto del frontend, no directamente al 3000). La API tiene CORS habilitado, pero el proxy es la forma recomendada.
+
+---
+
+## Entorno local no versionado
+
+Todo el código y el historial están en GitHub. Esta sección recoge lo que **solo existía en el equipo local** (revisado el 2026-10-22) y cómo recuperarlo en un equipo nuevo.
+
+### Ficheros locales que no se suben (y cómo regenerarlos)
+
+| Fichero | Qué es | Cómo recuperarlo |
+| ------- | ------ | ---------------- |
+| `packages/api/resttek.db` | Base de datos SQLite de desarrollo | `npm run seed` (crea las tablas, incluida `tables`, y los datos de prueba) |
+| `node_modules/`, `dist/`, `.angular/` | Dependencias y artefactos de build | `npm ci` y `npm run build -w <app>` |
+| `.claude/worktrees/*` | Copias de trabajo de ramas (una por agente/app) | `git worktree add .claude/worktrees/<nombre> <rama>` |
+| `.claude/settings.local.json` | Configuración personal de Claude Code | Ver más abajo |
+| `.DS_Store` | Ficheros de macOS | No hace falta |
+
+Si la base de datos local es anterior a la gestión de mesas (issue #5), bórrala y vuelve a sembrar: `rm packages/api/resttek.db && npm run seed`.
+
+### Configuración personal de Claude Code
+
+`.claude/settings.local.json` (ignorado por git) solo activa los servidores MCP del proyecto definidos en `.mcp.json`:
+
+```json
+{
+  "skillOverrides": {},
+  "enabledMcpjsonServers": ["context7", "slack"]
+}
+```
+
+Instrucciones globales del usuario en `~/.claude/CLAUDE.md` (fuera del repositorio):
+
+```text
+La documentación la tienes que escribir en español.
+Siempre que hables conmigo, hazlo en español y empieza con la frase "A sus ordenes, mi señor".
+```
+
+### Credenciales y servicios externos
+
+Ninguno de estos valores está en el repositorio; hay que volver a configurarlos:
+
+- **GitHub CLI**: `gh auth login` (lo usan las skills `plan-feature` e `implement-plan` y `scripts/seed-issues.sh`).
+- **Slack (MCP)**: variables de entorno `SLACK_BOT_TOKEN` y `SLACK_TEAM_ID` en el perfil de la shell; `.mcp.json` las lee con `${...}`. Las skills publican en el canal `planes-ed8` (`C0CAKE90QFR`).
+- **CI de GitHub Actions** (`.github/workflows/ci.yml`): secreto del repositorio `CLAUDE_CODE_OAUTH_TOKEN` para la revisión de seguridad con Claude. Opcionales: variables `CLAUDE_SECURITY_MODEL` y `CLAUDE_SECURITY_MAX_BUDGET_USD`.
+- **Protección de ramas**: para que el CI bloquee el merge en `development` y `main`, marca como checks obligatorios `Tests (api y web-shared)`, `Build web-admin`, `Build web-empleados`, `Build web-clientes` y `Revisión de seguridad (Claude)`.
+
+### Ramas y pendientes
+
+- La rama local `fix/001-correccion-vulnerabilidades-owasp` nunca se subió, pero está fusionada en `development`: no se pierde nada.
+- Las ramas de la issue #5 (`feat/5-gestion-mesas-*`) y `ci/workflow-pull-requests` están fusionadas en `development` y se pueden borrar.
+- Pendiente de la issue #5: la prueba visual de los tres frontends (tarea T32 de `docs/plans/2026-10-22-gestion-de-mesas.md`). Las comprobaciones de la API y los flujos por HTTP ya se hicieron.
