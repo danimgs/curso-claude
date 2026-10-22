@@ -167,7 +167,7 @@ Respuesta (`toJSON`): `{ id, restaurantId, number, description, capacity, status
 **API**
 
 - [x] **T1** (~5 min) — Añadir `CREATE TABLE IF NOT EXISTS tables` (esquema de la sección 4) en `runInitialMigrations()` · `packages/api/src/config/database.ts`
-- [ ] **T2** (~5 min) — Crear `Table`, `TableStatusType` y `normalizeTableStatus()` (lanza `InvalidTableStatusError`) · `packages/api/src/models/table.model.ts`
+- [x] **T2** (~5 min) — Crear `Table`, `TableStatusType` y `normalizeTableStatus()` (lanza `InvalidTableStatusError`) · `packages/api/src/models/table.model.ts`
 - [ ] **T3** (~5 min) — Añadir los errores `TableNotFoundError`, `InvalidTableStatusError`, `InvalidTableNumberError`, `InvalidCapacityError`, `InvalidTableDescriptionError`, `DuplicatedTableNumberError`, `TableNotAvailableError`, `TableOccupiedError`, `TableNotOccupiedError`, `InvalidPartySizeError` con mensajes en español · `packages/api/src/errors/DomainErrors.ts`
 - [ ] **T4** (~5 min) — Registrar `TableNotFoundError` como 404 y crear `CONFLICT_ERRORS` → 409 · `packages/api/src/contexts/shared/infrastructure/http/errorHandler.ts`
 - [ ] **T5** (~5 min) — Definir la interfaz `TableRepository` y crear `MockTableRepository` (incluido `occupyIfFree` y `findAvailable`) · `packages/api/src/repositories/table.repository.ts`, `packages/api/src/repositories/mocks/MockTableRepository.ts`

@@ -210,3 +210,9 @@ export class InvalidStatusTransitionError extends AppError {
     super(`Invalid status transition from ${from} to ${to}`)
   }
 }
+
+export class InvalidTableStatusError extends AppError {
+  constructor(message?: string) {
+    super(message ?? 'Estado de mesa inválido')
+  }
+}
