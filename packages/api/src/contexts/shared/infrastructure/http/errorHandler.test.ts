@@ -2,7 +2,7 @@ import { describe, it, expect, vi, afterEach } from 'vitest'
 import type { Request, Response } from 'express'
 import { errorHandler } from './errorHandler.js'
 import { logger } from '@config/logger.js'
-import { WeakPasswordError, OrderNotFoundError } from '@errors/DomainErrors.js'
+import { WeakPasswordError, OrderNotFoundError, TableNotFoundError, DuplicatedTableNumberError, TableNotAvailableError, TableOccupiedError, TableNotOccupiedError } from '@errors/DomainErrors.js'
 
 function run(err: unknown) {
     const json = vi.fn()
@@ -54,5 +54,24 @@ describe('errorHandler: otros errores', () => {
         expect(res.status).toHaveBeenCalledWith(500)
         expect(json).toHaveBeenCalledWith({ error: 'InternalServerError', message: 'Something went wrong' })
         expect(spy).toHaveBeenCalledWith({ err: boom, event: 'unhandled_error' }, 'Unhandled error')
+    })
+})
+
+describe('errorHandler: errores de mesas', () => {
+    it('TableNotFoundError responde 404', () => {
+        const { res, json } = run(new TableNotFoundError())
+        expect(res.status).toHaveBeenCalledWith(404)
+        expect(json).toHaveBeenCalledWith({ error: 'TableNotFoundError', message: 'Mesa no encontrada' })
+    })
+
+    it.each([
+        new DuplicatedTableNumberError(),
+        new TableNotAvailableError(),
+        new TableOccupiedError(),
+        new TableNotOccupiedError()
+    ])('$name responde 409', (error) => {
+        const { res, json } = run(error)
+        expect(res.status).toHaveBeenCalledWith(409)
+        expect(json).toHaveBeenCalledWith({ error: error.name, message: error.message })
     })
 })

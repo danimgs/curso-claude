@@ -38,10 +38,10 @@ npm run test:watch
 Conviven **dos estilos**; identifica cuál aplica antes de editar:
 
 1. **Hexagonal + DDD, solo el contexto `employee`** (`src/contexts/employee/{domain,application,infrastructure}`). `Employee` es la única entidad de dominio real (constructor privado + `create()`, getters, value objects `Email` y `Role`). Casos de uso en `application/` con mocks en `application/mocks/`. `src/contexts/shared/` contiene `Email`, middlewares (auth JWT, `authorize()`) y `errorHandler`.
-2. **Por capas, para `restaurant`, `dish`, `ingredient`, `order`**: `models/` (interfaces planas) → `repositories/` (interfaz + SQLite, mocks en `repositories/mocks/`) → `services/` (lógica y validación) → `controllers/` → `routes/` (composición de dependencias). Un fichero por dominio en cada carpeta.
+2. **Por capas, para `restaurant`, `dish`, `ingredient`, `order`, `table`**: `models/` (interfaces planas) → `repositories/` (interfaz + SQLite, mocks en `repositories/mocks/`) → `services/` (lógica y validación) → `controllers/` → `routes/` (composición de dependencias). Un fichero por dominio en cada carpeta.
 
 Detalles que requieren leer varios ficheros:
-- Los routers se montan en `src/app.ts` bajo `/api/v1/...`; hay rutas públicas (`/api/v1/public/restaurants[/:id/dishes]`) y rutas anidadas por restaurante.
+- Los routers se montan en `src/app.ts` bajo `/api/v1/...`; hay rutas públicas (`/api/v1/public/restaurants[/:id/dishes]` y `/api/v1/public/restaurants/:id/tables?partySize=`) y rutas anidadas por restaurante.
 - Alias de importación definidos en `tsconfig.json` (`@employee/*`, `@shared/*`, `@services/*`, `@routes/*`, etc.); Vitest los resuelve con `vite-tsconfig-paths`. Módulos ESM: los imports llevan extensión `.js`.
 - tsconfig muy estricto (`noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `verbatimModuleSyntax`).
 - Errores: `src/errors/AppError.ts` y `DomainErrors.ts`, traducidos a HTTP por `errorHandler`.
@@ -49,6 +49,8 @@ Detalles que requieren leer varios ficheros:
 - La BD se elige por `NODE_ENV` en `config/database.ts`; las tablas se crean al arrancar. El fichero `resttek.db` vive en `packages/api`.
 - Los clientes **son `Employee`** con `role = 'cliente'` y `restaurant_id = null` (no hay tabla de clientes; login y registro usan el mismo modelo).
 - Al crear un pedido, **cada unidad es un `OrderItem`** con `quantity: 1`, para que cocina marque el estado por unidad.
+- **Mesas** (`table`, contrato en `docs/api/openapi-mesas.yaml`): estados `libre`/`ocupada`/`reservada`. El admin hace el CRUD; admin, manager y camarero ven y cambian el estado (el cocinero no). `POST /restaurants/:restaurantId/tables/:id/occupy` es solo para `cliente` y **no usa `authorizeRestaurant`** (el cliente no tiene restaurante): un `UPDATE ... AND status = 'libre'` comprueba el restaurante y evita que dos clientes ocupen la misma mesa. Un pedido con `tableId` exige que la mesa sea del restaurante y esté `ocupada` (404 / 409); `orders.table_id` no tiene FK. La mesa no se libera sola: la libera el personal. Flujo de `web-clientes`: restaurante → número de personas → mesa libre → "Continuar" (ocupa la mesa) → carta → pedido con `tableId`.
+- `errorHandler` traduce a 409 los nombres de `CONFLICT_ERRORS` (errores de mesas). Los errores de dominio responden `{ error, message }`; los 401/403 de los middlewares solo `{ error }`.
 - El filtrado por rol en los frontends es solo de navegación (`roleGuard`, menús); la autorización real está en `authorize()` y `authorizeRestaurant` de la API. `GET /orders/active` deduce el restaurante del token: el cliente no envía `restaurantId`.
 
 ## Arquitectura del frontend

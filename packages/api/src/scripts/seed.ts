@@ -4,6 +4,7 @@ import { BcryptAuthService } from '@employee/infrastructure/BcryptAuthService.js
 import { SqliteEmployeeRepository } from '@employee/infrastructure/SqliteEmployeeRepository.js'
 import { Employee } from '@employee/domain/Employee.js'
 import { assertSeedAllowed } from './seedGuard.js'
+import { seedTables } from './seedTables.js'
 
 const seed = async () => {
     try {
@@ -13,6 +14,19 @@ const seed = async () => {
 
         const authService = new BcryptAuthService()
         const employeeRepo = new SqliteEmployeeRepository(dbConfig)
+
+        // Los restaurantes van primero: los empleados los referencian con clave foránea
+        await dbConfig.run(`
+            INSERT OR IGNORE INTO restaurants (id, name, address, email, phone, owner_first_name, owner_last_name, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `, ['rest-1', 'Restaurante El Gourmet', 'Calle Mayor 10, Madrid', 'info@gourmet.com', '912345678', 'Carlos', 'García', new Date().toISOString(), new Date().toISOString()])
+
+        await dbConfig.run(`
+            INSERT OR IGNORE INTO restaurants (id, name, address, email, phone, owner_first_name, owner_last_name, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `, ['rest-2', 'Pizzería Napoli', 'Avenida del Sol 25, Barcelona', 'info@napoli.com', '934567890', 'Marco', 'Rossi', new Date().toISOString(), new Date().toISOString()])
+
+        console.log('Restaurants created.')
 
         const admin = await employeeRepo.findByEmail('admin@resttek.com')
         if (!admin) {
@@ -61,17 +75,6 @@ const seed = async () => {
             }
         }
 
-        await dbConfig.run(`
-            INSERT OR IGNORE INTO restaurants (id, name, address, email, phone, owner_first_name, owner_last_name, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `, ['rest-1', 'Restaurante El Gourmet', 'Calle Mayor 10, Madrid', 'info@gourmet.com', '912345678', 'Carlos', 'García', new Date().toISOString(), new Date().toISOString()])
-
-        await dbConfig.run(`
-            INSERT OR IGNORE INTO restaurants (id, name, address, email, phone, owner_first_name, owner_last_name, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `, ['rest-2', 'Pizzería Napoli', 'Avenida del Sol 25, Barcelona', 'info@napoli.com', '934567890', 'Marco', 'Rossi', new Date().toISOString(), new Date().toISOString()])
-
-        console.log('Restaurants created.')
 
         const ingredientsRest1 = [
             { id: randomUUID(), name: 'Tomate', unit: 'kg' },
@@ -160,11 +163,14 @@ const seed = async () => {
 
         console.log('Restaurant 2 dishes created: 1 dish + 1 drink')
 
+        const table5Id = await seedTables(dbConfig)
+        console.log('Tables created: 6 in rest-1 (table 5 occupied) + 4 in rest-2')
+
         const order1Id = randomUUID()
         await dbConfig.run(`
             INSERT OR IGNORE INTO orders (id, restaurant_id, table_id, client_id, created_at)
             VALUES (?, ?, ?, ?, ?)
-        `, [order1Id, 'rest-1', '5', null, new Date().toISOString()])
+        `, [order1Id, 'rest-1', table5Id, null, new Date().toISOString()])
 
         for (let i = 0; i < 2; i++) {
             await dbConfig.run(`
