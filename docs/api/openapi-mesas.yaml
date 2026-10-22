@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Resttek API - Gestión de mesas (issue #5)
-  version: 1.0.0
+  version: 1.1.0
   description: |
     Contrato acordado entre la API y los tres frontends para la issue #5 (gestión de mesas).
     Fuente: `docs/plans/2026-10-22-gestion-de-mesas.md` (sección 4) y el código real de `packages/api`.
@@ -595,13 +595,15 @@ paths:
     get:
       tags: [Pedidos]
       operationId: listActiveOrders
-      summary: Pedidos activos del restaurante (sin cambios; ya devuelve tableId)
+      summary: Pedidos activos del restaurante (devuelve tableId y tableNumber)
       description: |
-        Sin cambios en la API. Devuelve los pedidos con al menos un ítem no `entregado`, ordenados por `createdAt` ascendente.
+        Devuelve los pedidos con al menos un ítem no `entregado`, ordenados por `createdAt` ascendente.
         Cada pedido incluye **todos** sus ítems (también los ya `entregado`) con `dishName`, `dishPrice` y `dishCategory`.
         No incluye `restaurantName`/`restaurantLogoUrl`.
         El restaurante se deduce del token para el personal; el admin debe pasar `?restaurantId=`.
         `web-empleados` cruza `tableId` con `Table.id` en cliente.
+        **Desde 1.1.0** cada pedido incluye además `tableNumber` (número de la mesa, o `null` si `tableId` es `null`
+        o la mesa ya no existe), para que cocina muestre la mesa sin poder listar mesas (el cocinero recibe 403 en `/tables`).
         Ojo: los errores de este endpoint **no** pasan por `errorHandler` (400 y 500 llevan solo `error`).
       x-roles: [admin, manager, camarero, cocinero]
       x-authorize-restaurant: false
@@ -627,6 +629,7 @@ paths:
                     - id: 5b6c7d8e-9f0a-4b1c-8d2e-3f4a5b6c7d8e
                       restaurantId: rest-1
                       tableId: 1d7f6a52-8b2c-4e0f-a1c3-5e9d7b4a2f05
+                      tableNumber: 5
                       clientId: null
                       createdAt: '2026-10-22T12:35:00.000Z'
                       items:
@@ -874,6 +877,11 @@ components:
         tableId:
           type: [string, 'null']
           description: Id de la mesa (`Table.id`) o `null`.
+        tableNumber:
+          type: [integer, 'null']
+          description: |
+            Solo en `/orders/active` (desde 1.1.0), y ahí siempre presente: número de la mesa (`Table.number`),
+            o `null` si `tableId` es `null` o la mesa ya no existe. No lo devuelven `POST /orders`, `/orders/mine` ni `/orders/{id}`.
         clientId:
           type: [string, 'null']
         createdAt:
