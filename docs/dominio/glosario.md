@@ -17,6 +17,7 @@ Terminología del dominio y conceptos técnicos utilizados en el proyecto Restte
 | **DishIngredient** | Relación entre un plato y un ingrediente, con la cantidad necesaria. |
 | **Order** | Pedido realizado por un cliente. Contiene ítems (platos) y está asociado a un restaurante. |
 | **OrderItem** | Línea de un pedido: un plato con cantidad, notas opcionales y estado. |
+| **Table** (mesa) | Mesa de un restaurante. Tiene número (único en el restaurante), descripción opcional, capacidad (1-20 comensales) y estado. Un pedido puede asociarse a una mesa ocupada mediante `tableId`. |
 
 Dos particularidades del modelo que conviene tener presentes:
 
@@ -43,6 +44,18 @@ El valor almacenado es `manager`; "gerente" es solo su traducción en la interfa
 | **preparando** | Ítem siendo preparado en cocina. | cocinero |
 | **listo** | Ítem preparado, listo para servir. | cocinero |
 | **entregado** | Ítem entregado al cliente. Desaparece de las vistas activas. | camarero |
+
+### Estados de Mesa
+
+| Estado | Descripción | Quién lo cambia |
+| --- | --- | --- |
+| **libre** | Mesa disponible. Es la única que aparece en el listado público para clientes. | Estado inicial por defecto; el personal (admin, manager, camarero) la libera a mano |
+| **ocupada** | Mesa en uso. Es el único estado que admite pedidos con esa mesa. | El cliente al elegirla (`occupy`, solo desde `libre`) o el personal |
+| **reservada** | Mesa apartada. No se puede ocupar ni pedir con ella. | Solo el personal o el admin |
+
+El personal puede pasar entre cualquier par de estados; el cliente solo hace `libre → ocupada`. La mesa **no se libera sola** al entregar el pedido ni caduca: la libera el camarero, el gerente o el admin. El cocinero no ve ni cambia mesas. `normalizeTableStatus()` acepta el valor con `trim()` + `toLowerCase()`.
+
+**Personas** (`partySize`): número de comensales que indica el cliente para buscar mesa (1-20). Solo se muestran mesas `libre` con `capacity >= partySize`; no se juntan mesas para grupos grandes.
 
 ### Categorías de Platos
 
@@ -89,17 +102,17 @@ Las tres capas aplican al contexto `employee`:
 | **Application** | Casos de uso. Orquesta la lógica de negocio. |
 | **Infrastructure** | Implementaciones concretas: BD, HTTP, servicios externos. |
 
-En `restaurant`, `dish`, `ingredient` y `order` la separación equivalente es por carpetas: `models/`, `repositories/`, `services/`, `controllers/` y `routes/`.
+En `restaurant`, `dish`, `ingredient`, `order` y `table` la separación equivalente es por carpetas: `models/`, `repositories/`, `services/`, `controllers/` y `routes/`.
 
 ### Patrones
 
 | Patrón | Descripción | Ejemplo en Resttek |
 | --- | --- | --- |
-| **Entity** | Objeto con identidad única y comportamiento propio. | `Employee` (la única). `Restaurant`, `Dish`, `Ingredient` y `Order` son `interface` planas |
+| **Entity** | Objeto con identidad única y comportamiento propio. | `Employee` (la única). `Restaurant`, `Dish`, `Ingredient`, `Order` y `Table` son `interface` planas |
 | **Value Object** | Objeto inmutable definido por su valor. | `Email`, `Role` |
 | **Repository** | Abstracción de persistencia. | `IEmployeeRepository`, `RestaurantRepository` |
 | **Use Case** | Acción de negocio específica, una clase con `execute()`. | `LoginUseCase`, `CreateEmployeeUseCase`, `RegisterClientUseCase` |
-| **Service** | Equivalente al caso de uso fuera de `employee`: una clase con varios métodos. | `RestaurantService`, `DishService`, `OrderService` |
+| **Service** | Equivalente al caso de uso fuera de `employee`: una clase con varios métodos. | `RestaurantService`, `DishService`, `OrderService`, `TableService` |
 | **DTO** | Objeto para transferir datos entre capas. | `CreateRestaurantDTO`, `LoginDTO` |
 | **Factory Method** | Método estático para crear instancias con validación. | `Employee.create()` |
 | **Store** | Servicio Angular que guarda estado con signals. | `AuthStore`, `DishStore`, `CartStore` |

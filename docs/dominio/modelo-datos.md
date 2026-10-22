@@ -12,6 +12,8 @@ erDiagram
     restaurants ||--o{ ingredients : "tiene"
     restaurants ||--o{ dishes : "tiene"
     restaurants ||--o{ orders : "tiene"
+    restaurants ||--o{ tables : "tiene"
+    tables |o--o{ orders : "table_id (sin FK)"
     dishes ||--o{ dish_ingredients : "contiene"
     ingredients ||--o{ dish_ingredients : "usado en"
     orders ||--o{ order_items : "contiene"
@@ -83,6 +85,17 @@ erDiagram
         INTEGER quantity
         TEXT notes
         TEXT status
+    }
+
+    tables {
+        TEXT id PK
+        TEXT restaurant_id FK
+        INTEGER number
+        TEXT description
+        INTEGER capacity
+        TEXT status
+        TEXT created_at
+        TEXT updated_at
     }
 ```
 
@@ -190,7 +203,7 @@ Pedidos de los clientes.
 | --- | --- | --- | --- |
 | `id` | TEXT | No | UUID, clave primaria |
 | `restaurant_id` | TEXT | No | FK → `restaurants.id` |
-| `table_id` | TEXT | Sí | Identificador de mesa (opcional) |
+| `table_id` | TEXT | Sí | Id de la mesa (`tables.id`) o null. **No es FK** (ver `tables`) |
 | `client_id` | TEXT | Sí | ID del cliente (opcional) |
 | `created_at` | TEXT | No | Fecha de creación |
 
@@ -215,6 +228,30 @@ Líneas de pedido. Cada ítem es un plato con cantidad y estado.
 
 ---
 
+### `tables`
+
+Mesas de cada restaurante.
+
+| Columna | Tipo | Nullable | Descripción |
+| --- | --- | --- | --- |
+| `id` | TEXT | No | UUID, clave primaria |
+| `restaurant_id` | TEXT | No | FK → `restaurants.id` |
+| `number` | INTEGER | No | Número visible de la mesa (entero ≥ 1) |
+| `description` | TEXT | Sí | Descripción libre (máx. 200 caracteres, p. ej. "Terraza") |
+| `capacity` | INTEGER | No | Número de comensales (1-20) |
+| `status` | TEXT | No | Estado: libre, ocupada, reservada (default: `libre`) |
+| `created_at` | TEXT | No | Fecha de creación |
+| `updated_at` | TEXT | No | Fecha de última actualización |
+
+**Restricciones:**
+
+- UNIQUE (`restaurant_id`, `number`): el número no se repite dentro de un restaurante.
+- `restaurant_id` es FK a `restaurants.id`.
+
+**Relación con `orders.table_id`:** no hay clave foránea, porque `orders` ya existía y `CREATE TABLE IF NOT EXISTS` no la altera. La integridad la garantiza `OrderService.create()`: si el pedido trae `tableId`, la mesa debe existir, ser del mismo restaurante (si no, `TableNotFoundError`, 404) y estar `ocupada` (si no, `TableNotOccupiedError`, 409). Borrar una mesa deja su id en los pedidos antiguos; por eso no se puede borrar una mesa `ocupada`.
+
+---
+
 ## Relaciones
 
 | Relación | Tipo | Descripción |
@@ -223,6 +260,8 @@ Líneas de pedido. Cada ítem es un plato con cantidad y estado.
 | Restaurant → Ingredients | 1:N | Un restaurante tiene muchos ingredientes |
 | Restaurant → Dishes | 1:N | Un restaurante tiene muchos platos |
 | Restaurant → Orders | 1:N | Un restaurante tiene muchos pedidos |
+| Restaurant → Tables | 1:N | Un restaurante tiene muchas mesas |
+| Table → Orders | 1:N (lógica) | Un pedido puede apuntar a una mesa por `table_id`, sin FK |
 | Dish ↔ Ingredient | N:M | Un plato usa varios ingredientes (via `dish_ingredients`) |
 | Order → OrderItems | 1:N | Un pedido tiene varios ítems |
 | Dish → OrderItems | 1:N | Un plato puede estar en varios ítems de pedido |
