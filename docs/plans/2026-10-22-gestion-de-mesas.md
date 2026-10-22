@@ -3,7 +3,7 @@
 - **Issue**: #5 — https://github.com/danimgs/curso-claude/issues/5
 - **Tipo**: funcionalidad
 - **Fecha**: 2026-10-22
-- **Estado**: pendiente
+- **Estado**: completado (pendiente la prueba visual de T32)
 
 ## 1. Contexto
 
@@ -166,35 +166,35 @@ Respuesta (`toJSON`): `{ id, restaurantId, number, description, capacity, status
 
 **API**
 
-- [ ] **T1** (~5 min) — Añadir `CREATE TABLE IF NOT EXISTS tables` (esquema de la sección 4) en `runInitialMigrations()` · `packages/api/src/config/database.ts`
-- [ ] **T2** (~5 min) — Crear `Table`, `TableStatusType` y `normalizeTableStatus()` (lanza `InvalidTableStatusError`) · `packages/api/src/models/table.model.ts`
-- [ ] **T3** (~5 min) — Añadir los errores `TableNotFoundError`, `InvalidTableStatusError`, `InvalidTableNumberError`, `InvalidCapacityError`, `InvalidTableDescriptionError`, `DuplicatedTableNumberError`, `TableNotAvailableError`, `TableOccupiedError`, `TableNotOccupiedError`, `InvalidPartySizeError` con mensajes en español · `packages/api/src/errors/DomainErrors.ts`
-- [ ] **T4** (~5 min) — Registrar `TableNotFoundError` como 404 y crear `CONFLICT_ERRORS` → 409 · `packages/api/src/contexts/shared/infrastructure/http/errorHandler.ts`
-- [ ] **T5** (~5 min) — Definir la interfaz `TableRepository` y crear `MockTableRepository` (incluido `occupyIfFree` y `findAvailable`) · `packages/api/src/repositories/table.repository.ts`, `packages/api/src/repositories/mocks/MockTableRepository.ts`
-- [ ] **T6** (~10 min) — Implementar `SqliteTableRepository` (mapeo de filas, `save` insert/update, `findAvailable`, `occupyIfFree` con `UPDATE ... AND status = 'libre'`) · `packages/api/src/repositories/table.repository.ts`
-- [ ] **T7** (~10 min) — TDD: tests de `TableService.create` (valores por defecto, número/capacidad/descripción/estado inválidos, número duplicado) e implementación de `create` + `buildTable` · `packages/api/src/services/table.service.ts`, `table.service.test.ts`
-- [ ] **T8** (~10 min) — TDD: `update`, `delete` (404 si es de otro restaurante, 409 si está ocupada), `findById`, `findByRestaurantId` · `packages/api/src/services/table.service.ts`, `table.service.test.ts`
-- [ ] **T9** (~10 min) — TDD: `updateStatus`, `findAvailable(restaurantId, partySize)` (valida `partySize`) y `occupy` (404 / 409 / ok) · `packages/api/src/services/table.service.ts`, `table.service.test.ts`
-- [ ] **T10** (~10 min) — Crear `TableController` (`create`, `getAll`, `getById`, `update`, `delete`, `updateStatus`, `occupy`, `getAvailable`, `toJSON` y `toPublicJSON`) · `packages/api/src/controllers/table.controller.ts`
-- [ ] **T11** (~10 min) — Crear `table.routes.ts` y `table.public.routes.ts` con los permisos de la sección 4 y montarlos en `app.ts` · `packages/api/src/routes/table.routes.ts`, `packages/api/src/routes/table.public.routes.ts`, `packages/api/src/app.ts`
-- [ ] **T12** (~10 min) — TDD: inyectar `TableRepository` en `OrderService`, validar `tableId` en `create()` (`TableNotFoundError` si no existe o es de otro restaurante, `TableNotOccupiedError` si no está `ocupada`), actualizar los constructores en los tests existentes y en `order.routes.ts` · `packages/api/src/services/order.service.ts`, `order.service.create.test.ts`, `order.service.test.ts`, `packages/api/src/routes/order.routes.ts`
-- [ ] **T13** (~5 min) — Añadir al seed 6 mesas en `rest-1` y 4 en `rest-2` (capacidades 2/4/6, la mesa 5 de `rest-1` `ocupada`) y usar el id real de esa mesa en el pedido de ejemplo en lugar de `'5'` · `packages/api/src/scripts/seed.ts`
-- [ ] **T14** (~5 min) — Borrar `packages/api/resttek.db`, ejecutar `npm run seed`, `npm test` y las peticiones de la sección 6 contra `npm run dev:api` · —
+- [x] **T1** (~5 min) — Añadir `CREATE TABLE IF NOT EXISTS tables` (esquema de la sección 4) en `runInitialMigrations()` · `packages/api/src/config/database.ts`
+- [x] **T2** (~5 min) — Crear `Table`, `TableStatusType` y `normalizeTableStatus()` (lanza `InvalidTableStatusError`) · `packages/api/src/models/table.model.ts`
+- [x] **T3** (~5 min) — Añadir los errores `TableNotFoundError`, `InvalidTableStatusError`, `InvalidTableNumberError`, `InvalidCapacityError`, `InvalidTableDescriptionError`, `DuplicatedTableNumberError`, `TableNotAvailableError`, `TableOccupiedError`, `TableNotOccupiedError`, `InvalidPartySizeError` con mensajes en español · `packages/api/src/errors/DomainErrors.ts`
+- [x] **T4** (~5 min) — Registrar `TableNotFoundError` como 404 y crear `CONFLICT_ERRORS` → 409 · `packages/api/src/contexts/shared/infrastructure/http/errorHandler.ts`
+- [x] **T5** (~5 min) — Definir la interfaz `TableRepository` y crear `MockTableRepository` (incluido `occupyIfFree` y `findAvailable`) · `packages/api/src/repositories/table.repository.ts`, `packages/api/src/repositories/mocks/MockTableRepository.ts`
+- [x] **T6** (~10 min) — Implementar `SqliteTableRepository` (mapeo de filas, `save` insert/update, `findAvailable`, `occupyIfFree` con `UPDATE ... AND status = 'libre'`) · `packages/api/src/repositories/table.repository.ts`
+- [x] **T7** (~10 min) — TDD: tests de `TableService.create` (valores por defecto, número/capacidad/descripción/estado inválidos, número duplicado) e implementación de `create` + `buildTable` · `packages/api/src/services/table.service.ts`, `table.service.test.ts`
+- [x] **T8** (~10 min) — TDD: `update`, `delete` (404 si es de otro restaurante, 409 si está ocupada), `findById`, `findByRestaurantId` · `packages/api/src/services/table.service.ts`, `table.service.test.ts`
+- [x] **T9** (~10 min) — TDD: `updateStatus`, `findAvailable(restaurantId, partySize)` (valida `partySize`) y `occupy` (404 / 409 / ok) · `packages/api/src/services/table.service.ts`, `table.service.test.ts`
+- [x] **T10** (~10 min) — Crear `TableController` (`create`, `getAll`, `getById`, `update`, `delete`, `updateStatus`, `occupy`, `getAvailable`, `toJSON` y `toPublicJSON`) · `packages/api/src/controllers/table.controller.ts`
+- [x] **T11** (~10 min) — Crear `table.routes.ts` y `table.public.routes.ts` con los permisos de la sección 4 y montarlos en `app.ts` · `packages/api/src/routes/table.routes.ts`, `packages/api/src/routes/table.public.routes.ts`, `packages/api/src/app.ts`
+- [x] **T12** (~10 min) — TDD: inyectar `TableRepository` en `OrderService`, validar `tableId` en `create()` (`TableNotFoundError` si no existe o es de otro restaurante, `TableNotOccupiedError` si no está `ocupada`), actualizar los constructores en los tests existentes y en `order.routes.ts` · `packages/api/src/services/order.service.ts`, `order.service.create.test.ts`, `order.service.test.ts`, `packages/api/src/routes/order.routes.ts`
+- [x] **T13** (~5 min) — Añadir al seed 6 mesas en `rest-1` y 4 en `rest-2` (capacidades 2/4/6, la mesa 5 de `rest-1` `ocupada`) y usar el id real de esa mesa en el pedido de ejemplo en lugar de `'5'` · `packages/api/src/scripts/seed.ts`
+- [x] **T14** (~5 min) — Borrar `packages/api/resttek.db`, ejecutar `npm run seed`, `npm test` y las peticiones de la sección 6 contra `npm run dev:api` · —
 
 **web-admin**
 
-- [ ] **T15** (~5 min) — Crear el modelo `Table`/`TableStatus` y `TableService` (CRUD contra `/restaurants/:restaurantId/tables`) · `packages/web-admin/src/app/features/tables/models/table.model.ts`, `services/table.service.ts`
-- [ ] **T16** (~10 min) — Crear `TableStore` (signals, `load`, `create`, `update`, `remove` con `.update()`) · `packages/web-admin/src/app/features/tables/store/table.store.ts`
-- [ ] **T17** (~10 min) — Crear `TableListComponent` (tabla con número, descripción, capacidad, estado, editar y eliminar con confirmación) · `packages/web-admin/src/app/features/tables/pages/table-list/table-list.component.ts`
-- [ ] **T18** (~10 min) — Crear `TableFormComponent` (alta/edición con validación: número ≥ 1, capacidad 1-20, descripción ≤ 200, estado) · `packages/web-admin/src/app/features/tables/pages/table-form/table-form.component.ts`
-- [ ] **T19** (~5 min) — Crear `tables.routes.ts`, registrar `restaurants/:restaurantId/tables` y añadir el enlace "Mesas" en el dashboard del restaurante · `packages/web-admin/src/app/features/tables/tables.routes.ts`, `app.routes.ts`, `features/restaurants/pages/restaurant-dashboard/restaurant-dashboard.component.ts`
+- [x] **T15** (~5 min) — Crear el modelo `Table`/`TableStatus` y `TableService` (CRUD contra `/restaurants/:restaurantId/tables`) · `packages/web-admin/src/app/features/tables/models/table.model.ts`, `services/table.service.ts`
+- [x] **T16** (~10 min) — Crear `TableStore` (signals, `load`, `create`, `update`, `remove` con `.update()`) · `packages/web-admin/src/app/features/tables/store/table.store.ts`
+- [x] **T17** (~10 min) — Crear `TableListComponent` (tabla con número, descripción, capacidad, estado, editar y eliminar con confirmación) · `packages/web-admin/src/app/features/tables/pages/table-list/table-list.component.ts`
+- [x] **T18** (~10 min) — Crear `TableFormComponent` (alta/edición con validación: número ≥ 1, capacidad 1-20, descripción ≤ 200, estado) · `packages/web-admin/src/app/features/tables/pages/table-form/table-form.component.ts`
+- [x] **T19** (~5 min) — Crear `tables.routes.ts`, registrar `restaurants/:restaurantId/tables` y añadir el enlace "Mesas" en el dashboard del restaurante · `packages/web-admin/src/app/features/tables/tables.routes.ts`, `app.routes.ts`, `features/restaurants/pages/restaurant-dashboard/restaurant-dashboard.component.ts`
 
 **web-empleados**
 
-- [ ] **T20** (~10 min) — Crear modelo, `TableService` (`getTables`, `updateStatus`) y `TableStore` con polling 30 s · `packages/web-empleados/src/app/features/tables/{models,services,store}/`
-- [ ] **T21** (~10 min) — Crear `MesasComponent`: tarjetas por mesa con estado y `<select>` para cambiarlo · `packages/web-empleados/src/app/features/tables/pages/mesas/mesas.component.ts`
-- [ ] **T22** (~10 min) — Mostrar en las mesas ocupadas los pedidos activos de `OrderStore` con `tableId === mesa.id` y el estado de cada ítem (iniciar/parar polling de ambos stores) · `mesas.component.ts`
-- [ ] **T23** (~5 min) — Añadir la ruta `mesas` (`roleGuard` camarero/manager) y el enlace en el menú del shell · `packages/web-empleados/src/app/app.routes.ts`, `core/layout/shell.component.ts`
+- [x] **T20** (~10 min) — Crear modelo, `TableService` (`getTables`, `updateStatus`) y `TableStore` con polling 30 s · `packages/web-empleados/src/app/features/tables/{models,services,store}/`
+- [x] **T21** (~10 min) — Crear `MesasComponent`: tarjetas por mesa con estado y `<select>` para cambiarlo · `packages/web-empleados/src/app/features/tables/pages/mesas/mesas.component.ts`
+- [x] **T22** (~10 min) — Mostrar en las mesas ocupadas los pedidos activos de `OrderStore` con `tableId === mesa.id` y el estado de cada ítem (iniciar/parar polling de ambos stores) · `mesas.component.ts`
+- [x] **T23** (~5 min) — Añadir la ruta `mesas` (`roleGuard` camarero/manager) y el enlace en el menú del shell · `packages/web-empleados/src/app/app.routes.ts`, `core/layout/shell.component.ts`
 
 **web-clientes**
 
@@ -207,8 +207,8 @@ Respuesta (`toJSON`): `{ id, restaurantId, number, description, capacity, status
 
 **Documentación y verificación**
 
-- [ ] **T30** (~10 min) — Documentar la tabla `tables`, la relación con `orders.table_id`, los estados de mesa y los endpoints · `docs/dominio/modelo-datos.md`, `docs/dominio/glosario.md`, `docs/arquitectura/arquitectura-api.md`
-- [ ] **T31** (~5 min) — Añadir a `CLAUDE.md` el dominio `table`, la ruta pública de mesas, que `occupy` no usa `authorizeRestaurant` y el flujo de cliente personas → mesa → carta · `CLAUDE.md`
+- [x] **T30** (~10 min) — Documentar la tabla `tables`, la relación con `orders.table_id`, los estados de mesa y los endpoints · `docs/dominio/modelo-datos.md`, `docs/dominio/glosario.md`, `docs/arquitectura/arquitectura-api.md`
+- [x] **T31** (~5 min) — Añadir a `CLAUDE.md` el dominio `table`, la ruta pública de mesas, que `occupy` no usa `authorizeRestaurant` y el flujo de cliente personas → mesa → carta · `CLAUDE.md`
 - [ ] **T32** (~10 min) — Probar de punta a punta los tres frontends (sección 6) · —
 
 ## 6. Verificación

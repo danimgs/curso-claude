@@ -4,7 +4,8 @@ import { normalizeOrderStatus, assertValidStatusTransition } from '@models/order
 import type { OrderRepository } from '@repositories/order.repository.js'
 import type { DishRepository } from '@repositories/dish.repository.js'
 import type { RestaurantRepository } from '@repositories/restaurant.repository.js'
-import { RestaurantIdRequiredError, OrderNotFoundError, InvalidOrderError, RestaurantNotFoundError, DishNotFoundError, DishNotAvailableError } from '@errors/DomainErrors.js'
+import type { TableRepository } from '@repositories/table.repository.js'
+import { RestaurantIdRequiredError, OrderNotFoundError, InvalidOrderError, RestaurantNotFoundError, DishNotFoundError, DishNotAvailableError, TableNotFoundError, TableNotOccupiedError } from '@errors/DomainErrors.js'
 
 const MAX_ITEMS = 50
 const MAX_QUANTITY = 20
@@ -31,7 +32,8 @@ export class OrderService {
     constructor(
         private readonly orderRepository: OrderRepository,
         private readonly dishRepository: DishRepository,
-        private readonly restaurantRepository: RestaurantRepository
+        private readonly restaurantRepository: RestaurantRepository,
+        private readonly tableRepository: TableRepository
     ) {}
 
     async create(request: CreateOrderRequest): Promise<Order> {
@@ -41,6 +43,7 @@ export class OrderService {
 
         this.validateItems(request.items)
         await this.validateRestaurantAndDishes(request.restaurantId, request.items)
+        await this.validateTable(request.restaurantId, request.tableId)
 
         const items: OrderItem[] = []
         for (const item of request.items) {
@@ -83,6 +86,21 @@ export class OrderService {
             if (!dish.available) {
                 throw new DishNotAvailableError()
             }
+        }
+    }
+
+    // Un pedido con mesa exige que la mesa sea del restaurante y que el cliente la haya ocupado
+    private async validateTable(restaurantId: string, tableId: unknown): Promise<void> {
+        if (tableId === null) return
+        if (typeof tableId !== 'string') {
+            throw new InvalidOrderError('tableId debe ser texto o null')
+        }
+        const table = await this.tableRepository.findById(tableId)
+        if (!table || table.restaurantId !== restaurantId) {
+            throw new TableNotFoundError()
+        }
+        if (table.status !== 'ocupada') {
+            throw new TableNotOccupiedError()
         }
     }
 
