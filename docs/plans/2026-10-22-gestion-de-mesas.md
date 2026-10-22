@@ -179,7 +179,7 @@ Respuesta (`toJSON`): `{ id, restaurantId, number, description, capacity, status
 - [x] **T11** (~10 min) — Crear `table.routes.ts` y `table.public.routes.ts` con los permisos de la sección 4 y montarlos en `app.ts` · `packages/api/src/routes/table.routes.ts`, `packages/api/src/routes/table.public.routes.ts`, `packages/api/src/app.ts`
 - [x] **T12** (~10 min) — TDD: inyectar `TableRepository` en `OrderService`, validar `tableId` en `create()` (`TableNotFoundError` si no existe o es de otro restaurante, `TableNotOccupiedError` si no está `ocupada`), actualizar los constructores en los tests existentes y en `order.routes.ts` · `packages/api/src/services/order.service.ts`, `order.service.create.test.ts`, `order.service.test.ts`, `packages/api/src/routes/order.routes.ts`
 - [x] **T13** (~5 min) — Añadir al seed 6 mesas en `rest-1` y 4 en `rest-2` (capacidades 2/4/6, la mesa 5 de `rest-1` `ocupada`) y usar el id real de esa mesa en el pedido de ejemplo en lugar de `'5'` · `packages/api/src/scripts/seed.ts`
-- [ ] **T14** (~5 min) — Borrar `packages/api/resttek.db`, ejecutar `npm run seed`, `npm test` y las peticiones de la sección 6 contra `npm run dev:api` · —
+- [x] **T14** (~5 min) — Borrar `packages/api/resttek.db`, ejecutar `npm run seed`, `npm test` y las peticiones de la sección 6 contra `npm run dev:api` · —
 
 **web-admin**
 
