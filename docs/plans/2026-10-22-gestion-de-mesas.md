@@ -208,7 +208,7 @@ Respuesta (`toJSON`): `{ id, restaurantId, number, description, capacity, status
 **Documentación y verificación**
 
 - [x] **T30** (~10 min) — Documentar la tabla `tables`, la relación con `orders.table_id`, los estados de mesa y los endpoints · `docs/dominio/modelo-datos.md`, `docs/dominio/glosario.md`, `docs/arquitectura/arquitectura-api.md`
-- [ ] **T31** (~5 min) — Añadir a `CLAUDE.md` el dominio `table`, la ruta pública de mesas, que `occupy` no usa `authorizeRestaurant` y el flujo de cliente personas → mesa → carta · `CLAUDE.md`
+- [x] **T31** (~5 min) — Añadir a `CLAUDE.md` el dominio `table`, la ruta pública de mesas, que `occupy` no usa `authorizeRestaurant` y el flujo de cliente personas → mesa → carta · `CLAUDE.md`
 - [ ] **T32** (~10 min) — Probar de punta a punta los tres frontends (sección 6) · —
 
 ## 6. Verificación
